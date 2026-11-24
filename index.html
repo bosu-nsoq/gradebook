@@ -805,6 +805,7 @@
   let currentUser = null; 
   let cachedData = null;  
   let classList = [];
+  let allClassDataMap = {}; // แคชสมุดคะแนนทุกห้องของผู้ใช้ที่โหลดมาครบแล้ว เพื่อความรวดเร็วและไม่ต้องเด้งป๊อปอัพซ้ำ
   let currentIndex = 0;
   let lastFocusedIndex = null;
   let currentEnteredPin = "";
@@ -814,7 +815,7 @@
   let autoSaveTimeout = null;
   let activeStudentTab = 'single';
 
-  // Mock Store บน GitHub Pages
+  // Mock Store บน GitHub Pages (ใช้ชื่อระดับชั้นเป็นชื่อเต็ม)
   let mockStore = {
     users: [
       { row: 2, userId: "ADM01", name: "ครูบอส", subject: "ภาษาไทย", pin: "8055", role: "admin" },
@@ -824,19 +825,19 @@
     ],
     // ข้อมูลนักเรียนส่วนกลาง: เลขที่, ชื่อ, ชั้น
     students: [
-      { no: 1, name: "ด.ช. ตัวอย่าง รักเรียน", className: "ป.5/1" },
-      { no: 2, name: "ด.ญ. มานี มีตา", className: "ป.5/1" },
-      { no: 3, name: "ด.ช. ชูใจ ใจดี", className: "ป.5/1" },
-      { no: 4, name: "ด.ญ. ปิติ สุขใจ", className: "ป.5/1" },
-      { no: 5, name: "ด.ช. วีระ มานะ", className: "ป.5/1" },
-      { no: 1, name: "ด.ช. สมศักดิ์ สดใส", className: "ป.5/2" },
-      { no: 2, name: "ด.ญ. สมใจ มั่นคง", className: "ป.5/2" },
-      { no: 1, name: "ด.ช. เก่งกล้า ท้าทาย", className: "ป.6/1" },
-      { no: 2, name: "ด.ญ. สวยสม นิยมไทย", className: "ป.6/1" }
+      { no: 1, name: "ด.ช. ตัวอย่าง รักเรียน", className: "ชั้นประถมศึกษาปีที่ 5/1" },
+      { no: 2, name: "ด.ญ. มานี มีตา", className: "ชั้นประถมศึกษาปีที่ 5/1" },
+      { no: 3, name: "ด.ช. ชูใจ ใจดี", className: "ชั้นประถมศึกษาปีที่ 5/1" },
+      { no: 4, name: "ด.ญ. ปิติ สุขใจ", className: "ชั้นประถมศึกษาปีที่ 5/1" },
+      { no: 5, name: "ด.ช. วีระ มานะ", className: "ชั้นประถมศึกษาปีที่ 5/1" },
+      { no: 1, name: "ด.ช. สมศักดิ์ สดใส", className: "ชั้นประถมศึกษาปีที่ 5/2" },
+      { no: 2, name: "ด.ญ. สมใจ มั่นคง", className: "ชั้นประถมศึกษาปีที่ 5/2" },
+      { no: 1, name: "ด.ช. เก่งกล้า ท้าทาย", className: "ชั้นประถมศึกษาปีที่ 6/1" },
+      { no: 2, name: "ด.ญ. สวยสม นิยมไทย", className: "ชั้นประถมศึกษาปีที่ 6/1" }
     ],
-    // ตารางคะแนนแยกตาม [ClassName]_[UserID] เพื่อความปลอดภัยและไม่ซ้ำซ้อน
+    // ตารางคะแนนแยกตาม [ClassName]_[UserID]
     scores: {
-      "ป.5/1_ADM01": {
+      "ชั้นประถมศึกษาปีที่ 5/1_ADM01": {
         headers: [
           { name: "คะแนนเก็บภาษาไทย (10)", colIndex: 3, max: 10 },
           { name: "การอ่านคิดวิเคราะห์ (10)", colIndex: 4, max: 10 },
@@ -850,7 +851,7 @@
           5: { "คะแนนเก็บภาษาไทย (10)": 10, "การอ่านคิดวิเคราะห์ (10)": 9, "สอบกลางภาคไทย (20)": 17 }
         }
       },
-      "ป.5/1_TCH01": {
+      "ชั้นประถมศึกษาปีที่ 5/1_TCH01": {
         headers: [
           { name: "การบ้านคณิต (10)", colIndex: 3, max: 10 },
           { name: "สอบเก็บคะแนนคณิต (15)", colIndex: 4, max: 15 }
@@ -961,10 +962,73 @@
    * 3. GAS API PROXY & BRIDGE
    * ============================================================
    */
+  function getMockClassData(cls, uId) {
+    const fullCls = formatClassName(cls);
+    const key = fullCls + "_" + (uId || "ADM01");
+    let scoreItem = mockStore.scores[key];
+    if (!scoreItem) {
+      scoreItem = {
+        headers: [
+          { name: "คะแนนเก็บ (10)", colIndex: 3, max: 10 },
+          { name: "สอบกลางภาค (20)", colIndex: 4, max: 20 }
+        ],
+        values: {}
+      };
+      mockStore.scores[key] = scoreItem;
+    }
+    const classStudents = mockStore.students
+      .filter(s => formatClassName(s.className) === fullCls)
+      .sort((a, b) => a.no - b.no);
+    
+    const studentsResult = classStudents.map((s, idx) => {
+      const studentScores = scoreItem.values[s.no] || {};
+      return {
+        row: idx + 2,
+        no: s.no,
+        name: s.name,
+        scores: studentScores
+      };
+    });
+    return {
+      headers: scoreItem.headers,
+      students: studentsResult
+    };
+  }
+
   function handleMockCall(prop, args, successFn, failureFn) {
     setTimeout(() => {
       try {
-        if (prop === "loginUserByPin") {
+        if (prop === "loginAndLoadAll") {
+          const pin = String(args[0]).trim();
+          const user = mockStore.users.find(u => u.pin === pin) || (pin === "8055" ? mockStore.users[0] : (pin === "1234" ? mockStore.users[1] : null));
+          if (user) {
+            const classSet = {};
+            mockStore.students.forEach(s => { if (s.className) classSet[formatClassName(s.className)] = true; });
+            const classes = Object.keys(classSet).sort();
+            const classesData = {};
+            classes.forEach(c => {
+              classesData[c] = getMockClassData(c, user.userId);
+            });
+            successFn({
+              success: true,
+              user: { userId: user.userId, name: user.name, subject: user.subject, role: user.role },
+              classes: classes,
+              classesData: classesData
+            });
+          } else {
+            successFn({ success: false, message: "รหัส PIN ไม่ถูกต้อง" });
+          }
+        } else if (prop === "getUserAllData") {
+          const uId = args[0] || (currentUser ? currentUser.userId : "ADM01");
+          const classSet = {};
+          mockStore.students.forEach(s => { if (s.className) classSet[formatClassName(s.className)] = true; });
+          const classes = Object.keys(classSet).sort();
+          const classesData = {};
+          classes.forEach(c => {
+            classesData[c] = getMockClassData(c, uId);
+          });
+          successFn({ classes, classesData });
+        } else if (prop === "loginUserByPin") {
           const pin = String(args[0]).trim();
           const user = mockStore.users.find(u => u.pin === pin);
           if (user) {
@@ -1250,7 +1314,7 @@
     const msg = document.getElementById('pinMsg');
     if (msg) msg.innerText = "กำลังตรวจสอบรหัส PIN...";
 
-    showLoading("กำลังเข้าสู่ระบบ...");
+    showLoading("กำลังเข้าสู่ระบบและเตรียมสมุดคะแนนทุกห้อง...");
 
     google.script.run
       .withSuccessHandler(res => {
@@ -1260,6 +1324,9 @@
           
           applyUserUI();
 
+          classList = (res.classes || []).map(formatClassName);
+          allClassDataMap = res.classesData || {};
+
           const pinOverlay = document.getElementById('pinOverlay');
           pinOverlay.style.opacity = '0';
           pinOverlay.style.transition = 'opacity 0.25s ease';
@@ -1268,7 +1335,8 @@
             pinOverlay.style.opacity = '1';
           }, 250);
           
-          refreshClassList();
+          renderClassDropdownAndSelect();
+          hideLoading();
         } else {
           hideLoading();
           showPinError(res ? res.message : "รหัส PIN ไม่ถูกต้อง");
@@ -1282,6 +1350,13 @@
           currentUser = { userId: user.userId, name: user.name, subject: user.subject, role: user.role };
           sessionStorage.setItem(SESSION_USER_KEY, JSON.stringify(currentUser));
           applyUserUI();
+          
+          classList = ["ชั้นประถมศึกษาปีที่ 5/1", "ชั้นประถมศึกษาปีที่ 5/2", "ชั้นประถมศึกษาปีที่ 6/1"];
+          allClassDataMap = {};
+          classList.forEach(cls => {
+            allClassDataMap[cls] = getMockClassData(cls, currentUser.userId);
+          });
+
           const pinOverlay = document.getElementById('pinOverlay');
           pinOverlay.style.opacity = '0';
           pinOverlay.style.transition = 'opacity 0.25s ease';
@@ -1289,13 +1364,14 @@
             pinOverlay.style.display = 'none';
             pinOverlay.style.opacity = '1';
           }, 250);
-          refreshClassList();
+          renderClassDropdownAndSelect();
+          hideLoading();
         } else {
           hideLoading();
           showPinError("รหัส PIN ไม่ถูกต้อง");
         }
       })
-      .loginUserByPin(pin);
+      .loginAndLoadAll(pin);
   }
 
   function showPinError(errorText) {
@@ -1376,39 +1452,62 @@
    * 5. DATA LOGIC & STUDENT SELECTION (ไม่ทับซ้อนเด็ดขาด)
    * ============================================================
    */
+  function renderClassDropdownAndSelect(targetClassName = null) {
+    let select = document.getElementById('classSelect');
+    select.innerHTML = '<option value="" disabled selected>เลือกชั้นเรียน</option>';
+    
+    if (classList.length > 0) {
+      classList.forEach(name => {
+        let opt = document.createElement('option');
+        opt.value = name; 
+        opt.text = formatClassName(name);
+        select.add(opt);
+      });
+    }
+    
+    if (currentUser && currentUser.role === 'admin') {
+      let newOpt = document.createElement('option');
+      newOpt.value = "__NEW_CLASS__";
+      newOpt.text = "➕ เพิ่มห้องเรียนใหม่...";
+      select.add(newOpt);
+    }
+
+    let targetCls = targetClassName ? classList.find(c => String(c).trim() === String(targetClassName).trim()) : null;
+    if (!targetCls && classList.length > 0) {
+      targetCls = classList[0];
+    }
+
+    if (targetCls) { 
+      select.value = targetCls; 
+      switchClassInstantly(targetCls);
+    } else {
+      hideLoading();
+    }
+  }
+
+  function switchClassInstantly(cls) {
+    if (!cls || cls === "__NEW_CLASS__" || !currentUser) return;
+    
+    // หากมีข้อมูลของห้องนี้โหลดไว้แล้ว แสดงผลทันทีโดยไม่ต้องเด้งป๊อปอัพหลายรอบ (ระบบพร้อมทำงานเลย)
+    if (allClassDataMap && allClassDataMap[cls] && allClassDataMap[cls].students) {
+      cachedData = allClassDataMap[cls];
+      currentIndex = 0;
+      lastFocusedIndex = null;
+      populateStudentDropdown();
+      renderUI();
+      // ซิงค์ข้อมูลเบื้องหลังอย่างเงียบๆ
+      fetchDataSilently();
+    } else {
+      // หากยังไม่มี ให้ดึงจากหลังบ้าน
+      fetchData(true);
+    }
+  }
+
   function refreshClassList(selectClassName = null) {
     google.script.run
       .withSuccessHandler(names => {
-        classList = names || [];
-        let select = document.getElementById('classSelect');
-        select.innerHTML = '<option value="" disabled selected>เลือกชั้นเรียน</option>';
-        
-        if (classList.length > 0) {
-          classList.forEach(name => {
-            let opt = document.createElement('option');
-            opt.value = name; 
-            opt.text = formatClassName(name);
-            select.add(opt);
-          });
-        }
-        
-        if (currentUser && currentUser.role === 'admin') {
-          let newOpt = document.createElement('option');
-          newOpt.value = "__NEW_CLASS__";
-          newOpt.text = "➕ เพิ่มห้องเรียนใหม่...";
-          select.add(newOpt);
-        }
-
-        let targetCls = selectClassName ? classList.find(c => String(c).trim() === String(selectClassName).trim()) : null;
-        if (targetCls) { 
-          select.value = targetCls; 
-          fetchData(!isLoadingPopupActive); 
-        } else if (classList.length > 0) {
-          select.value = classList[0];
-          fetchData(!isLoadingPopupActive);
-        } else {
-          hideLoading();
-        }
+        classList = (names || []).map(formatClassName);
+        renderClassDropdownAndSelect(selectClassName);
       })
       .withFailureHandler(err => {
         hideLoading();
@@ -1419,9 +1518,20 @@
 
   function formatClassName(shortName) {
     if (!shortName) return "";
-    shortName = String(shortName).trim();
-    if (shortName.startsWith("ชั้น")) return shortName;
-    return "ชั้น " + shortName;
+    var s = String(shortName).trim();
+    
+    // แปลงชื่อระดับชั้นเป็นชื่อเต็มมาตรฐานไทย (เช่น ป.5/1 -> ชั้นประถมศึกษาปีที่ 5/1)
+    var matchP = s.match(/^(?:ชั้น)?(?:ประถมศึกษาปีที่\s*|\.?[ปป]\.?\s*)(\d+)[\/|\.](\d+)$/);
+    if (matchP) return "ชั้นประถมศึกษาปีที่ " + matchP[1] + "/" + matchP[2];
+    
+    var matchM = s.match(/^(?:ชั้น)?(?:มัธยมศึกษาปีที่\s*|\.?[มม]\.?\s*)(\d+)[\/|\.](\d+)$/);
+    if (matchM) return "ชั้นมัธยมศึกษาปีที่ " + matchM[1] + "/" + matchM[2];
+
+    var matchA = s.match(/^(?:ชั้น)?(?:อนุบาล(?:ปีที่)?\s*|\.?[ออ]\.?\s*)(\d+)[\/|\.](\d+)$/);
+    if (matchA) return "ชั้นอนุบาลปีที่ " + matchA[1] + "/" + matchA[2];
+    
+    if (s.indexOf("ชั้น") === 0) return s;
+    return "ชั้น " + s;
   }
 
   function confirmDeleteCurrentClass() {
@@ -1449,6 +1559,7 @@
     google.script.run
       .withSuccessHandler(res => {
         showCuteSaveToast(`🗑️ ลบ ${displayName} เรียบร้อยแล้ว`);
+        delete allClassDataMap[cls];
         refreshClassList();
       })
       .withFailureHandler(err => {
@@ -1460,11 +1571,13 @@
 
   function onClassSelectChange() {
     let select = document.getElementById('classSelect');
-    if (select.value === "__NEW_CLASS__") {
+    let cls = select.value;
+    if (cls === "__NEW_CLASS__") {
       createNewClassPrompt();
       return;
     }
-    fetchData(true);
+    // สลับห้องเรียนทันทีจากข้อมูลที่โหลดมาครบแล้ว ไม่ต้องเด้งป๊อปอัพหลายรอบ
+    switchClassInstantly(cls);
   }
 
   function createNewClassPrompt() {
@@ -1473,12 +1586,13 @@
       refreshClassList();
       return;
     }
-    let className = prompt("ระบุชื่อชั้นเรียนใหม่ (เช่น ป.5/3 หรือ ม.1/2):");
+    let className = prompt("ระบุชื่อชั้นเรียนใหม่ (เช่น ชั้นประถมศึกษาปีที่ 5/3 หรือ ม.1/2):");
     if (!className || !className.trim()) {
       refreshClassList();
       return;
     }
-    showLoading(`กำลังสร้างห้อง ${className.trim()}...`);
+    let fullCls = formatClassName(className.trim());
+    showLoading(`กำลังสร้างห้อง ${fullCls}...`);
     google.script.run
       .withSuccessHandler(res => {
         if (res === "Duplicate") {
@@ -1486,8 +1600,8 @@
           alert("ชื่อห้องเรียนนี้มีอยู่แล้วในระบบ");
           refreshClassList();
         } else {
-          showCuteSaveToast(`🎉 สร้างห้อง ${className.trim()} เรียบร้อยแล้ว`);
-          refreshClassList(className.trim());
+          showCuteSaveToast(`🎉 สร้างห้อง ${fullCls} เรียบร้อยแล้ว`);
+          refreshClassList(fullCls);
         }
       })
       .withFailureHandler(err => {
@@ -1495,7 +1609,7 @@
         alert("เกิดข้อผิดพลาดในการสร้างห้องเรียน: " + err);
         refreshClassList();
       })
-      .createNewClass(className.trim());
+      .createNewClass(fullCls);
   }
 
   function fetchData(showLoadingIndicator = true) {
@@ -1512,6 +1626,8 @@
     google.script.run
       .withSuccessHandler(data => {
         cachedData = data || { students: [], headers: [] };
+        if (!allClassDataMap) allClassDataMap = {};
+        allClassDataMap[cls] = cachedData;
         currentIndex = 0;
         lastFocusedIndex = null; 
         populateStudentDropdown();

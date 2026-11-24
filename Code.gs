@@ -97,17 +97,17 @@ function getOrCreateStudentsSheet() {
     // หัวตาราง: เลขที่, ชื่อ, ชั้น
     sheet.appendRow(["เลขที่", "ชื่อ", "ชั้น"]);
     
-    // ข้อมูลเริ่มต้นตัวอย่างหลายชั้นเรียน
+    // ข้อมูลเริ่มต้นตัวอย่างหลายชั้นเรียน (ใช้ชื่อระดับชั้นเป็นชื่อเต็ม)
     var sampleStudents = [
-      [1, "ด.ช. ตัวอย่าง รักเรียน", "ป.5/1"],
-      [2, "ด.ญ. มานี มีตา", "ป.5/1"],
-      [3, "ด.ช. ชูใจ ใจดี", "ป.5/1"],
-      [4, "ด.ญ. ปิติ สุขใจ", "ป.5/1"],
-      [5, "ด.ช. วีระ มานะ", "ป.5/1"],
-      [1, "ด.ช. สมศักดิ์ สดใส", "ป.5/2"],
-      [2, "ด.ญ. สมใจ มั่นคง", "ป.5/2"],
-      [1, "ด.ช. เก่งกล้า ท้าทาย", "ป.6/1"],
-      [2, "ด.ญ. สวยสม นิยมไทย", "ป.6/1"]
+      [1, "ด.ช. ตัวอย่าง รักเรียน", "ชั้นประถมศึกษาปีที่ 5/1"],
+      [2, "ด.ญ. มานี มีตา", "ชั้นประถมศึกษาปีที่ 5/1"],
+      [3, "ด.ช. ชูใจ ใจดี", "ชั้นประถมศึกษาปีที่ 5/1"],
+      [4, "ด.ญ. ปิติ สุขใจ", "ชั้นประถมศึกษาปีที่ 5/1"],
+      [5, "ด.ช. วีระ มานะ", "ชั้นประถมศึกษาปีที่ 5/1"],
+      [1, "ด.ช. สมศักดิ์ สดใส", "ชั้นประถมศึกษาปีที่ 5/2"],
+      [2, "ด.ญ. สมใจ มั่นคง", "ชั้นประถมศึกษาปีที่ 5/2"],
+      [1, "ด.ช. เก่งกล้า ท้าทาย", "ชั้นประถมศึกษาปีที่ 6/1"],
+      [2, "ด.ญ. สวยสม นิยมไทย", "ชั้นประถมศึกษาปีที่ 6/1"]
     ];
     sampleStudents.forEach(function(row) {
       sheet.appendRow(row);
@@ -123,23 +123,74 @@ function getOrCreateStudentsSheet() {
   return sheet;
 }
 
-// ดึงรายชื่อชั้นเรียนทั้งหมดจากคอลัมน์ "ชั้น" ในชีต Students
+// ============================================================
+// ฟังก์ชันจัดการชื่อระดับชั้นเรียนภาษาไทย (ชื่อเต็ม vs ชื่อย่อ)
+// ============================================================
+function toFullClassName(shortName) {
+  if (!shortName) return "";
+  var s = String(shortName).trim();
+  
+  // ประถมศึกษา
+  var matchP = s.match(/^(?:ชั้น)?(?:ประถมศึกษาปีที่\s*|\.?[ปป]\.?\s*)(\d+)[\/|\.](\d+)$/);
+  if (matchP) return "ชั้นประถมศึกษาปีที่ " + matchP[1] + "/" + matchP[2];
+  
+  // มัธยมศึกษา
+  var matchM = s.match(/^(?:ชั้น)?(?:มัธยมศึกษาปีที่\s*|\.?[มม]\.?\s*)(\d+)[\/|\.](\d+)$/);
+  if (matchM) return "ชั้นมัธยมศึกษาปีที่ " + matchM[1] + "/" + matchM[2];
+
+  // อนุบาล
+  var matchA = s.match(/^(?:ชั้น)?(?:อนุบาล(?:ปีที่)?\s*|\.?[ออ]\.?\s*)(\d+)[\/|\.](\d+)$/);
+  if (matchA) return "ชั้นอนุบาลปีที่ " + matchA[1] + "/" + matchA[2];
+  
+  if (s.indexOf("ชั้น") === 0) return s;
+  return "ชั้น " + s;
+}
+
+function toShortClassName(fullName) {
+  if (!fullName) return "";
+  var s = String(fullName).trim();
+  var matchP = s.match(/^(?:ชั้น)?ประถมศึกษาปีที่\s*(\d+)[\/|\.](\d+)$/);
+  if (matchP) return "ป." + matchP[1] + "/" + matchP[2];
+  
+  var matchM = s.match(/^(?:ชั้น)?มัธยมศึกษาปีที่\s*(\d+)[\/|\.](\d+)$/);
+  if (matchM) return "ม." + matchM[1] + "/" + matchM[2];
+
+  var matchA = s.match(/^(?:ชั้น)?อนุบาล(?:ปีที่)?\s*(\d+)[\/|\.](\d+)$/);
+  if (matchA) return "อ." + matchA[1] + "/" + matchA[2];
+  
+  return s;
+}
+
+function isClassMatch(a, b) {
+  if (!a || !b) return false;
+  var strA = String(a).trim();
+  var strB = String(b).trim();
+  if (strA === strB) return true;
+  return toFullClassName(strA) === toFullClassName(strB);
+}
+
+// ดึงรายชื่อชั้นเรียนทั้งหมด (ใช้ชื่อเต็ม เช่น ชั้นประถมศึกษาปีที่ 5/1)
 function getAllClassNames() {
   var sheet = getOrCreateStudentsSheet();
   var data = sheet.getDataRange().getValues();
   var classesSet = {};
 
   for (var i = 1; i < data.length; i++) {
-    var cls = String(data[i][2]).trim();
-    if (cls) {
-      classesSet[cls] = true;
+    var rawCls = String(data[i][2]).trim();
+    if (rawCls) {
+      var fullCls = toFullClassName(rawCls);
+      classesSet[fullCls] = true;
+      // ปรับปรุงในชีต Students ให้เป็นชื่อเต็มโดยอัตโนมัติ
+      if (rawCls !== fullCls) {
+        sheet.getRange(i + 1, 3).setValue(fullCls);
+      }
     }
   }
 
   var classes = Object.keys(classesSet);
   classes.sort();
   if (classes.length === 0) {
-    classes = ["ป.5/1", "ป.5/2", "ป.6/1"];
+    classes = ["ชั้นประถมศึกษาปีที่ 5/1", "ชั้นประถมศึกษาปีที่ 5/2", "ชั้นประถมศึกษาปีที่ 6/1"];
   }
   return classes;
 }
@@ -155,11 +206,11 @@ function getStudentsByClass(className) {
     var name = String(data[i][1]).trim();
     var cls = String(data[i][2]).trim();
 
-    if (cls === className && name) {
+    if (isClassMatch(cls, className) && name) {
       students.push({
         no: Number(no),
         name: name,
-        className: cls
+        className: toFullClassName(cls)
       });
     }
   }
@@ -174,19 +225,20 @@ function getStudentsByClass(className) {
 // เพิ่มนักเรียนใหม่เข้าสู่ชีต Students (ชื่อ, ชั้น, เลขที่)
 function addStudent(className, no, name) {
   var sheet = getOrCreateStudentsSheet();
-  sheet.appendRow([Number(no), String(name).trim(), String(className).trim()]);
+  var fullCls = toFullClassName(className);
+  sheet.appendRow([Number(no), String(name).trim(), fullCls]);
   return "Success";
 }
 
 // เพิ่มรายชื่อนักเรียนทีละหลายคนพร้อมกัน (Bulk Import)
 function addMultipleStudents(className, studentList) {
   var sheet = getOrCreateStudentsSheet();
-  var cls = String(className).trim();
+  var fullCls = toFullClassName(className);
   
   if (Array.isArray(studentList)) {
     studentList.forEach(function(s) {
       if (s.name && String(s.name).trim()) {
-        sheet.appendRow([Number(s.no), String(s.name).trim(), cls]);
+        sheet.appendRow([Number(s.no), String(s.name).trim(), fullCls]);
       }
     });
   }
@@ -350,28 +402,47 @@ function deleteUser(userId) {
 
 // ============================================================
 // 3. ระบบแยกคะแนนรายบุคคลของผู้ใช้แต่ละคน (User-isolated Score Sheets)
-//    ชื่อชีตคะแนน: [ClassName]_[UserID] เช่น ป.5/1_ADM01
+//    ชื่อชีตคะแนน: [ClassName]_[UserID] เช่น ชั้นประถมศึกษาปีที่ 5/1_ADM01
 // ============================================================
 
 function getUserScoreSheetName(className, userId) {
-  var cls = (className && String(className).trim() && String(className).trim() !== "undefined") ? String(className).trim() : "";
   var uId = (userId && String(userId).trim() && String(userId).trim() !== "undefined") ? String(userId).trim() : "ADM01";
-  return cls ? (cls + "_" + uId) : "";
+  var fullCls = toFullClassName(className);
+  return fullCls ? (fullCls + "_" + uId) : "";
+}
+
+function getUserScoreSheet(ss, className, userId) {
+  var uId = (userId && String(userId).trim() && String(userId).trim() !== "undefined") ? String(userId).trim() : "ADM01";
+  var fullCls = toFullClassName(className);
+  var shortCls = toShortClassName(className);
+
+  var sheet = ss.getSheetByName(fullCls + "_" + uId);
+  if (!sheet && shortCls) {
+    sheet = ss.getSheetByName(shortCls + "_" + uId);
+    if (sheet) {
+      try {
+        sheet.setName(fullCls + "_" + uId);
+      } catch(e) {}
+    }
+  }
+  return sheet;
 }
 
 // ดึงข้อมูลคะแนนเฉพาะของ User คนนั้นในห้องเรียนนั้น
 function getClassData(className, userId) {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var sheetName = getUserScoreSheetName(className, userId);
-  if (!sheetName) return { headers: [], students: [] };
-  var sheet = ss.getSheetByName(sheetName);
+  var uId = (userId && String(userId).trim() && String(userId).trim() !== "undefined") ? String(userId).trim() : "ADM01";
+  var fullCls = toFullClassName(className);
+  if (!fullCls) return { headers: [], students: [] };
+
+  var sheet = getUserScoreSheet(ss, fullCls, uId);
 
   // ดึงรายชื่อนักเรียนปัจจุบันในชั้นเรียนนี้จากชีต Students
-  var studentRoster = getStudentsByClass(className);
+  var studentRoster = getStudentsByClass(fullCls);
 
   // หากยังไม่มีชีตคะแนนของผู้ใช้นี้ ให้สร้างชีตใหม่พร้อมหัวข้อเริ่มต้น
   if (!sheet) {
-    sheet = ss.insertSheet(sheetName);
+    sheet = ss.insertSheet(fullCls + "_" + uId);
     var defaultHeader = ["No", "Name", "Class", "คะแนนเก็บ (10)", "สอบกลางภาค (20)"];
     sheet.appendRow(defaultHeader);
     
@@ -466,39 +537,76 @@ function getClassData(className, userId) {
   return { headers: headers, students: finalStudents };
 }
 
+// ดึงข้อมูลสมุดคะแนนทั้งหมดทุกห้องเรียนของผู้ใช้ในครั้งเดียว
+function getUserAllData(userId) {
+  var classes = getAllClassNames();
+  var classesData = {};
+  
+  classes.forEach(function(cls) {
+    classesData[cls] = getClassData(cls, userId);
+  });
+
+  return {
+    classes: classes,
+    classesData: classesData
+  };
+}
+
+// เข้าสู่ระบบพร้อมโหลดสมุดคะแนนทุกห้องของผู้ใช้ทันที (ระบบพร้อมทำงานเลย)
+function loginAndLoadAll(pin) {
+  var loginRes = loginUserByPin(pin);
+  if (!loginRes || !loginRes.success) {
+    return loginRes;
+  }
+
+  var user = loginRes.user;
+  var allData = getUserAllData(user.userId);
+
+  return {
+    success: true,
+    user: user,
+    classes: allData.classes,
+    classesData: allData.classesData
+  };
+}
+
 // บันทึกคะแนนลงในชีตคะแนนของผู้ใช้นั้นโดยเฉพาะ
 function saveScore(className, userId, row, colIndex, value) {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var sheetName = getUserScoreSheetName(className, userId);
-  var sheet = ss.getSheetByName(sheetName);
+  var uId = (userId && String(userId).trim() && String(userId).trim() !== "undefined") ? String(userId).trim() : "ADM01";
+  var sheet = getUserScoreSheet(ss, className, uId);
   if (!sheet) return "SheetNotFound";
 
   sheet.getRange(row, colIndex + 1).setValue(value);
+  SpreadsheetApp.flush();
   return "Success";
 }
 
 // เพิ่มช่องคะแนนใหม่ในชีตคะแนนของผู้ใช้นั้นโดยเฉพาะ
 function addHeader(className, userId, headerName) {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var sheetName = getUserScoreSheetName(className, userId);
-  var sheet = ss.getSheetByName(sheetName);
+  var uId = (userId && String(userId).trim() && String(userId).trim() !== "undefined") ? String(userId).trim() : "ADM01";
+  var sheet = getUserScoreSheet(ss, className, uId);
   if (!sheet) return "SheetNotFound";
 
   var nextCol = sheet.getLastColumn() + 1;
   sheet.getRange(1, nextCol).setValue(headerName);
+  SpreadsheetApp.flush();
   return "Success";
 }
 
 // สร้างชั้นเรียนใหม่
 function createNewClass(className) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var fullCls = toFullClassName(className);
+  if (!fullCls) return "InvalidClassName";
+
   var sheet = getOrCreateStudentsSheet();
   var data = sheet.getDataRange().getValues();
-  var cls = String(className).trim();
-  if (!cls) return "InvalidClassName";
-
   var exists = false;
+
   for (var i = 1; i < data.length; i++) {
-    if (String(data[i][2]).trim() === cls) {
+    if (isClassMatch(data[i][2], fullCls)) {
       exists = true;
       break;
     }
@@ -507,8 +615,8 @@ function createNewClass(className) {
   if (exists) return "Duplicate";
 
   // เพิ่มนักเรียนตัวอย่างสำหรับห้องเรียนใหม่ในชีต Students
-  sheet.appendRow([1, "ด.ช. ตัวอย่าง รักเรียน", cls]);
-  sheet.appendRow([2, "ด.ญ. มานี มีตา", cls]);
+  sheet.appendRow([1, "ด.ช. ตัวอย่าง รักเรียน", fullCls]);
+  sheet.appendRow([2, "ด.ญ. มานี มีตา", fullCls]);
   SpreadsheetApp.flush();
 
   return "Success";
@@ -517,26 +625,26 @@ function createNewClass(className) {
 // ลบชั้นเรียน (เฉพาะ Admin)
 function deleteClass(className) {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var cls = String(className).trim();
-  if (!cls) return "InvalidClassName";
+  var fullCls = toFullClassName(className);
+  var shortCls = toShortClassName(className);
+  if (!fullCls) return "InvalidClassName";
 
   // 1. ลบนักเรียนของชั้นนี้ออกจากชีต Students
   var studentSheet = ss.getSheetByName("Students");
   if (studentSheet) {
     var data = studentSheet.getDataRange().getValues();
-    // ลบจากแถวล่างสุดขึ้นบน เพื่อป้องกัน row index คลาดเคลื่อน
     for (var r = data.length - 1; r >= 1; r--) {
-      if (String(data[r][2]).trim() === cls) {
+      if (isClassMatch(data[r][2], fullCls)) {
         studentSheet.deleteRow(r + 1);
       }
     }
   }
 
-  // 2. ลบชีตคะแนนของห้องนี้ทั้งหมด (เช่น cls + "_ADM01", cls + "_TCH01")
+  // 2. ลบชีตคะแนนของห้องนี้ทั้งหมด
   var sheets = ss.getSheets();
   sheets.forEach(function(sh) {
     var shName = sh.getName();
-    if (shName === cls || shName.indexOf(cls + "_") === 0) {
+    if (shName.indexOf(fullCls + "_") === 0 || (shortCls && shName.indexOf(shortCls + "_") === 0)) {
       if (ss.getSheets().length > 1) {
         try {
           ss.deleteSheet(sh);
@@ -571,40 +679,44 @@ function setupInitialSheets() {
   // 2. ชีต Users (รหัสผู้ใช้, ชื่อ, วิชา, PIN, Role)
   var userSheet = getOrCreateUsersSheet();
   
-  // 3. ชีตคะแนน ป.5/1_ADM01 (ภาษาไทย ครูบอส)
-  var s1 = ss.getSheetByName("ป.5/1_ADM01");
+  // 3. ชีตคะแนน ชั้นประถมศึกษาปีที่ 5/1_ADM01 (ภาษาไทย ครูบอส)
+  var s1 = ss.getSheetByName("ชั้นประถมศึกษาปีที่ 5/1_ADM01") || ss.getSheetByName("ป.5/1_ADM01");
   if (!s1) {
-    s1 = ss.insertSheet("ป.5/1_ADM01");
+    s1 = ss.insertSheet("ชั้นประถมศึกษาปีที่ 5/1_ADM01");
     s1.appendRow(["No", "Name", "Class", "คะแนนเก็บภาษาไทย (10)", "การอ่านคิดวิเคราะห์ (10)", "สอบกลางภาคไทย (20)"]);
     var h1 = s1.getRange(1, 1, 1, 6);
     h1.setFontWeight("bold").setBackground("#6c5ce7").setFontColor("#ffffff").setHorizontalAlignment("center");
     
     var st5_1 = [
-      [1, "ด.ช. ตัวอย่าง รักเรียน", "ป.5/1", 9, 8, 18],
-      [2, "ด.ญ. มานี มีตา", "ป.5/1", 10, 10, 19],
-      [3, "ด.ช. ชูใจ ใจดี", "ป.5/1", 8, 7, 15],
-      [4, "ด.ญ. ปิติ สุขใจ", "ป.5/1", 7, 9, 16],
-      [5, "ด.ช. วีระ มานะ", "ป.5/1", 10, 9, 17]
+      [1, "ด.ช. ตัวอย่าง รักเรียน", "ชั้นประถมศึกษาปีที่ 5/1", 9, 8, 18],
+      [2, "ด.ญ. มานี มีตา", "ชั้นประถมศึกษาปีที่ 5/1", 10, 10, 19],
+      [3, "ด.ช. ชูใจ ใจดี", "ชั้นประถมศึกษาปีที่ 5/1", 8, 7, 15],
+      [4, "ด.ญ. ปิติ สุขใจ", "ชั้นประถมศึกษาปีที่ 5/1", 7, 9, 16],
+      [5, "ด.ช. วีระ มานะ", "ชั้นประถมศึกษาปีที่ 5/1", 10, 9, 17]
     ];
     st5_1.forEach(function(r) { s1.appendRow(r); });
+  } else if (s1.getName() === "ป.5/1_ADM01") {
+    try { s1.setName("ชั้นประถมศึกษาปีที่ 5/1_ADM01"); } catch(e) {}
   }
 
-  // 4. ชีตคะแนน ป.5/1_TCH01 (คณิตศาสตร์ ครูสมหมาย)
-  var s2 = ss.getSheetByName("ป.5/1_TCH01");
+  // 4. ชีตคะแนน ชั้นประถมศึกษาปีที่ 5/1_TCH01 (คณิตศาสตร์ ครูสมหมาย)
+  var s2 = ss.getSheetByName("ชั้นประถมศึกษาปีที่ 5/1_TCH01") || ss.getSheetByName("ป.5/1_TCH01");
   if (!s2) {
-    s2 = ss.insertSheet("ป.5/1_TCH01");
+    s2 = ss.insertSheet("ชั้นประถมศึกษาปีที่ 5/1_TCH01");
     s2.appendRow(["No", "Name", "Class", "การบ้านคณิต (10)", "สอบเก็บคะแนนคณิต (15)"]);
     var h2 = s2.getRange(1, 1, 1, 5);
     h2.setFontWeight("bold").setBackground("#a29bfe").setFontColor("#ffffff").setHorizontalAlignment("center");
     
     var st5_2 = [
-      [1, "ด.ช. ตัวอย่าง รักเรียน", "ป.5/1", 8, 14],
-      [2, "ด.ญ. มานี มีตา", "ป.5/1", 10, 15],
-      [3, "ด.ช. ชูใจ ใจดี", "ป.5/1", 7, 11],
-      [4, "ด.ญ. ปิติ สุขใจ", "ป.5/1", 9, 12],
-      [5, "ด.ช. วีระ มานะ", "ป.5/1", 8, 13]
+      [1, "ด.ช. ตัวอย่าง รักเรียน", "ชั้นประถมศึกษาปีที่ 5/1", 8, 14],
+      [2, "ด.ญ. มานี มีตา", "ชั้นประถมศึกษาปีที่ 5/1", 10, 15],
+      [3, "ด.ช. ชูใจ ใจดี", "ชั้นประถมศึกษาปีที่ 5/1", 7, 11],
+      [4, "ด.ญ. ปิติ สุขใจ", "ชั้นประถมศึกษาปีที่ 5/1", 9, 12],
+      [5, "ด.ช. วีระ มานะ", "ชั้นประถมศึกษาปีที่ 5/1", 8, 13]
     ];
     st5_2.forEach(function(r) { s2.appendRow(r); });
+  } else if (s2.getName() === "ป.5/1_TCH01") {
+    try { s2.setName("ชั้นประถมศึกษาปีที่ 5/1_TCH01"); } catch(e) {}
   }
   
   // 5. ลบแผ่นงานเริ่มต้นหรือแผ่นงานตกค้างที่ไม่ได้ใช้งาน (Sheet1, แผ่นงาน1, undefined_*)
