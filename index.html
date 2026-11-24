@@ -149,19 +149,35 @@
     }
 
     /* ============================================================
-       แถบเลือกชั้นเรียน, ปุ่มลบชั้นเรียน & ปุ่มเพิ่มนักเรียนเด่นชัด
+       แถบเลือกชั้นเรียน (ป๊อปอัพ), ปุ่มลบชั้นเรียน & ปุ่มเพิ่มนักเรียน (ไอคอน) ตามข้อ 1, 2, 3, 4
        ============================================================ */
     .class-action-bar {
       display: flex; gap: 8px; align-items: center; margin-bottom: 10px;
     }
-    select#classSelect {
+    .class-picker-trigger {
       flex: 1; height: 46px; line-height: 46px; padding: 0 14px;
       font-family: 'Mali', cursive !important;
-      font-size: 15px; font-weight: 700; color: #333;
+      font-size: 14.5px; font-weight: 700; color: #333;
       border: 1.5px solid rgba(255, 255, 255, 0.95);
       border-radius: 16px; background-color: #ffffff;
       outline: none; box-shadow: 0 3px 10px rgba(0,0,0,0.04);
-      cursor: pointer; text-overflow: ellipsis; white-space: nowrap; overflow: hidden;
+      cursor: pointer; display: flex; align-items: center; gap: 8px;
+      user-select: none; transition: all 0.15s ease; min-width: 0;
+    }
+    .class-picker-trigger:active {
+      transform: scale(0.98); background-color: #f8f9fe;
+    }
+    .class-picker-icon {
+      color: var(--primary); font-size: 15px; flex-shrink: 0;
+    }
+    .class-picker-text-wrap {
+      flex: 1; text-overflow: ellipsis; white-space: nowrap; overflow: hidden; text-align: left;
+    }
+    .picker-caret {
+      font-size: 11px; opacity: 0.5; margin-left: auto; flex-shrink: 0;
+    }
+    select#classSelect {
+      display: none;
     }
     .btn-action-icon {
       width: 44px; height: 46px; border-radius: 16px; border: 1.5px solid transparent;
@@ -177,6 +193,15 @@
     .btn-delete-class:hover {
       background: #ffe3e3;
     }
+    /* ปุ่มเพิ่มนักเรียน: เอาแค่ไอคอน เอาข้อความออก ตามข้อ 1 */
+    .btn-add-student {
+      background: linear-gradient(135deg, #6c5ce7, #8c7ae6);
+      color: white; border: none;
+      box-shadow: 0 4px 12px rgba(108, 92, 231, 0.25);
+    }
+    .btn-add-student:hover {
+      box-shadow: 0 6px 16px rgba(108, 92, 231, 0.35);
+    }
     .btn-quick-student {
       height: 46px; padding: 0 14px; border: none; border-radius: 16px;
       background: linear-gradient(135deg, #6c5ce7, #8c7ae6);
@@ -186,6 +211,66 @@
       transition: transform 0.15s;
     }
     .btn-quick-student:active { transform: scale(0.96); }
+
+    /* แสดงชื่อชั้นเต็มในคอมพิวเตอร์ และแบบย่อในมือถือ ตามข้อ 2, 3 */
+    .class-name-full {
+      display: inline;
+    }
+    .class-name-short {
+      display: none;
+    }
+    @media (max-width: 600px) {
+      .class-name-full {
+        display: none !important;
+      }
+      .class-name-short {
+        display: inline !important;
+      }
+    }
+
+    /* สไตล์ป๊อปอัพเลือกชั้นเรียนและนักเรียน ตามข้อ 4 */
+    .popup-item-list {
+      display: flex; flex-direction: column; gap: 8px; max-height: 52vh; overflow-y: auto; padding: 2px;
+    }
+    .popup-item {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 14px; border-radius: 16px; background: #f8f9fe;
+      border: 1.5px solid #edf0fd; cursor: pointer; transition: all 0.15s ease;
+      font-size: 14.5px; font-weight: 600; color: #2d3436; text-align: left;
+      user-select: none;
+    }
+    .popup-item:hover {
+      background: #f1f2fe; border-color: #d1d8fc; transform: translateY(-1px);
+    }
+    .popup-item:active {
+      transform: scale(0.98);
+    }
+    .popup-item.active {
+      background: linear-gradient(135deg, rgba(108, 92, 231, 0.12), rgba(162, 155, 254, 0.2));
+      border-color: #6c5ce7; color: #6c5ce7; font-weight: 700;
+    }
+    .popup-item .popup-item-icon {
+      margin-right: 8px; color: #6c5ce7; font-size: 14px; flex-shrink: 0;
+    }
+    .popup-item .popup-check-icon {
+      color: #6c5ce7; font-size: 16px; margin-left: 8px; flex-shrink: 0;
+    }
+    .popup-student-no {
+      background: rgba(108, 92, 231, 0.12); color: #6c5ce7; font-size: 12.5px;
+      padding: 3px 9px; border-radius: 10px; font-weight: 700; margin-right: 10px; flex-shrink: 0;
+    }
+    .popup-student-name {
+      flex: 1; text-overflow: ellipsis; white-space: nowrap; overflow: hidden;
+    }
+    .btn-popup-add-class {
+      width: 100%; padding: 11px; border-radius: 14px; border: 1.5px dashed #6c5ce7;
+      background: #fdfdff; color: #6c5ce7; font-family: 'Mali', cursive;
+      font-size: 14px; font-weight: 700; cursor: pointer; display: flex; align-items: center;
+      justify-content: center; gap: 8px; transition: all 0.15s ease;
+    }
+    .btn-popup-add-class:hover {
+      background: rgba(108, 92, 231, 0.08);
+    }
 
     /* ============================================================
        แถบเลื่อนนักเรียน (Navigator) - จัดระยะห่างไม่ทับซ้อนเด็ดขาด
@@ -223,12 +308,15 @@
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
       max-width: 220px;
     }
+    .student-center-info {
+      cursor: pointer;
+      user-select: none;
+    }
     .student-tap-hint {
-      font-size: 11px; color: #888; margin-top: 2px;
+      font-size: 11px; color: var(--primary); margin-top: 2px; font-weight: 600;
     }
     #studentNav {
-      position: absolute; inset: 0; width: 100%; height: 100%;
-      opacity: 0; cursor: pointer;
+      display: none;
     }
 
     /* ============================================================
@@ -585,28 +673,35 @@
     </div>
   </div>
 
-  <!-- แถบเลือกชั้นเรียน, ปุ่มลบชั้นเรียน (Admin) & ปุ่มเพิ่มนักเรียนเด่นชัด (ข้อ 1, 2) -->
+  <!-- แถบเลือกชั้นเรียน (ป๊อปอัพ), ปุ่มลบชั้นเรียน (Admin) & ปุ่มเพิ่มนักเรียน (ไอคอน) ตามข้อ 1, 2, 3, 4 -->
   <div class="class-action-bar">
-    <select id="classSelect" onchange="onClassSelectChange()">
-      <option value="" disabled selected>กำลังโหลดชั้นเรียน...</option>
-    </select>
+    <div class="class-picker-trigger" id="classPickerBtn" onclick="openClassPickerModal()" title="แตะเพื่อเลือกชั้นเรียน">
+      <i class="fas fa-chalkboard class-picker-icon"></i>
+      <div class="class-picker-text-wrap">
+        <span class="class-name-full" id="classDisplayFull">กำลังโหลดชั้นเรียน...</span>
+        <span class="class-name-short" id="classDisplayShort">กำลังโหลด...</span>
+      </div>
+      <i class="fas fa-chevron-down picker-caret"></i>
+    </div>
+    <select id="classSelect" onchange="onClassSelectChange()" style="display:none;"></select>
+
     <button type="button" class="btn-action-icon btn-delete-class" id="deleteClassBtn" onclick="confirmDeleteCurrentClass()" title="ลบชั้นเรียนนี้ (Admin)">
       <i class="fas fa-trash-alt"></i>
     </button>
-    <button type="button" class="btn-quick-student" onclick="openAddStudentModal()" title="เพิ่มรายชื่อนักเรียน">
-      <i class="fas fa-user-plus"></i> เพิ่มนักเรียน
+    <button type="button" class="btn-action-icon btn-add-student" id="addStudentQuickBtn" onclick="openAddStudentModal()" title="เพิ่มรายชื่อนักเรียน" aria-label="เพิ่มรายชื่อนักเรียน">
+      <i class="fas fa-user-plus"></i>
     </button>
   </div>
 
-  <!-- แถบเลื่อนนักเรียน (Navigator จัดระยะห่างไม่ทับซ้อน) -->
+  <!-- แถบเลื่อนนักเรียน (Navigator จัดระยะห่างไม่ทับซ้อน) - แตะเพื่อเปิดป๊อปอัพเลือกนักเรียน ตามข้อ 4 -->
   <div class="student-navigator-box">
     <button type="button" class="nav-arrow-btn" onclick="nav(-1)" aria-label="คนก่อนหน้า"><i class="fas fa-chevron-left"></i></button>
     
-    <div class="student-center-info">
+    <div class="student-center-info" onclick="openStudentPickerModal()" style="cursor: pointer;" title="แตะเพื่อเปิดป๊อปอัพเลือกนักเรียน">
       <span class="student-no-pill" id="studentNoPill">เลขที่ -</span>
       <h3 class="student-fullname-text" id="studentNameText">รอนักเรียน...</h3>
       <div class="student-tap-hint" id="studentCountHint"><i class="fas fa-caret-down"></i> แตะเพื่อเลือกเลขที่</div>
-      <select id="studentNav" onchange="jumpToStudent()" title="เลือกนักเรียน"></select>
+      <select id="studentNav" onchange="jumpToStudent()" style="display:none;" title="เลือกนักเรียน"></select>
     </div>
 
     <button type="button" class="nav-arrow-btn" onclick="nav(1)" aria-label="คนถัดไป"><i class="fas fa-chevron-right"></i></button>
@@ -738,6 +833,45 @@
     </div>
     <div class="modal-footer">
       <button type="button" class="btn-quick-student" style="background:#eee; color:#555; box-shadow:none;" onclick="closeModal('userManagerModal')">ปิดหน้าต่าง</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     MODAL 3: CLASS PICKER (POPUP ตามข้อ 4)
+     ============================================================ -->
+<div class="modal-overlay" id="classPickerModal" onclick="closeOnOverlayClick(event, 'classPickerModal')">
+  <div class="modal-card" style="max-width: 370px;">
+    <div class="modal-header">
+      <h3><i class="fas fa-chalkboard"></i> เลือกชั้นเรียน</h3>
+      <button type="button" class="modal-close-btn" onclick="closeModal('classPickerModal')">&times;</button>
+    </div>
+    <div class="modal-body" style="padding: 14px 16px;">
+      <div id="classListContainer" class="popup-item-list">
+        <!-- รายการชั้นเรียน เรนเดอร์เป็นปุ่มการ์ด -->
+      </div>
+      <div id="adminAddClassRow" style="display:none; margin-top: 12px; border-top: 1px dashed rgba(108,92,231,0.25); padding-top: 10px;">
+        <button type="button" class="btn-popup-add-class" onclick="closeModal('classPickerModal'); createNewClassPrompt();">
+          <i class="fas fa-plus-circle"></i> ➕ เพิ่มห้องเรียนใหม่...
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     MODAL 4: STUDENT PICKER (POPUP ตามข้อ 4)
+     ============================================================ -->
+<div class="modal-overlay" id="studentPickerModal" onclick="closeOnOverlayClick(event, 'studentPickerModal')">
+  <div class="modal-card" style="max-width: 390px; max-height: 82vh;">
+    <div class="modal-header">
+      <h3><i class="fas fa-user-graduate"></i> เลือกนักเรียน</h3>
+      <button type="button" class="modal-close-btn" onclick="closeModal('studentPickerModal')">&times;</button>
+    </div>
+    <div class="modal-body" style="padding: 14px 16px;">
+      <div id="studentListContainer" class="popup-item-list">
+        <!-- รายชื่อนักเรียน เรนเดอร์เป็นปุ่มการ์ด -->
+      </div>
     </div>
   </div>
 </div>
@@ -1235,7 +1369,29 @@
         currentUser = JSON.parse(savedUser);
         applyUserUI();
         document.getElementById('pinOverlay').style.display = 'none';
-        refreshClassList();
+        
+        // ค้างหน้าโหลดไว้จนกว่าจะโหลดไฟล์คะแนนเสร็จสมบูรณ์ ตามข้อ 5
+        showLoading("กำลังโหลดไฟล์คะแนน...");
+        const pin = currentUser.pin || (currentUser.userId === 'ADM01' ? '8055' : (currentUser.userId === 'TCH01' ? '1234' : ''));
+        if (pin) {
+          google.script.run
+            .withSuccessHandler(res => {
+              if (res && res.success) {
+                classList = (res.classes || []).map(formatClassName);
+                allClassDataMap = res.classesData || {};
+                renderClassDropdownAndSelect();
+                hideLoading();
+              } else {
+                refreshClassList();
+              }
+            })
+            .withFailureHandler(err => {
+              refreshClassList();
+            })
+            .loginAndLoadAll(pin);
+        } else {
+          refreshClassList();
+        }
         return;
       } catch(e) {}
     }
@@ -1307,12 +1463,13 @@
     const msg = document.getElementById('pinMsg');
     if (msg) msg.innerText = "กำลังตรวจสอบรหัส PIN...";
 
-    showLoading("กำลังเข้าสู่ระบบและเตรียมสมุดคะแนนทุกห้อง...");
+    showLoading("กำลังเข้าสู่ระบบและโหลดไฟล์คะแนน...");
 
     google.script.run
       .withSuccessHandler(res => {
         if (res && res.success) {
           currentUser = res.user;
+          currentUser.pin = pin;
           sessionStorage.setItem(SESSION_USER_KEY, JSON.stringify(currentUser));
           
           applyUserUI();
@@ -1320,16 +1477,17 @@
           classList = (res.classes || []).map(formatClassName);
           allClassDataMap = res.classesData || {};
 
+          renderClassDropdownAndSelect();
+
           const pinOverlay = document.getElementById('pinOverlay');
           pinOverlay.style.opacity = '0';
           pinOverlay.style.transition = 'opacity 0.25s ease';
           setTimeout(() => {
             pinOverlay.style.display = 'none';
             pinOverlay.style.opacity = '1';
+            // ค้างหน้าโหลดจนกว่าจะโหลดและเรนเดอร์เสร็จ จึงปลดหน้าโหลดออก ตามข้อ 5
+            hideLoading();
           }, 250);
-          
-          renderClassDropdownAndSelect();
-          hideLoading();
         } else {
           hideLoading();
           showPinError(res ? res.message : "รหัส PIN ไม่ถูกต้อง");
@@ -1340,7 +1498,7 @@
         const pin = currentEnteredPin;
         const user = mockStore.users.find(u => u.pin === pin) || (pin === "8055" ? mockStore.users[0] : (pin === "1234" ? mockStore.users[1] : null));
         if (user) {
-          currentUser = { userId: user.userId, name: user.name, subject: user.subject, role: user.role };
+          currentUser = { userId: user.userId, name: user.name, subject: user.subject, role: user.role, pin: pin };
           sessionStorage.setItem(SESSION_USER_KEY, JSON.stringify(currentUser));
           applyUserUI();
           
@@ -1350,15 +1508,16 @@
             allClassDataMap[cls] = getMockClassData(cls, currentUser.userId);
           });
 
+          renderClassDropdownAndSelect();
+
           const pinOverlay = document.getElementById('pinOverlay');
           pinOverlay.style.opacity = '0';
           pinOverlay.style.transition = 'opacity 0.25s ease';
           setTimeout(() => {
             pinOverlay.style.display = 'none';
             pinOverlay.style.opacity = '1';
+            hideLoading();
           }, 250);
-          renderClassDropdownAndSelect();
-          hideLoading();
         } else {
           hideLoading();
           showPinError("รหัส PIN ไม่ถูกต้อง");
@@ -1447,22 +1606,22 @@
    */
   function renderClassDropdownAndSelect(targetClassName = null) {
     let select = document.getElementById('classSelect');
-    select.innerHTML = '<option value="" disabled selected>เลือกชั้นเรียน</option>';
-    
-    if (classList.length > 0) {
-      classList.forEach(name => {
-        let opt = document.createElement('option');
-        opt.value = name; 
-        opt.text = formatClassName(name);
-        select.add(opt);
-      });
-    }
-    
-    if (currentUser && currentUser.role === 'admin') {
-      let newOpt = document.createElement('option');
-      newOpt.value = "__NEW_CLASS__";
-      newOpt.text = "➕ เพิ่มห้องเรียนใหม่...";
-      select.add(newOpt);
+    if (select) {
+      select.innerHTML = '<option value="" disabled selected>เลือกชั้นเรียน</option>';
+      if (classList.length > 0) {
+        classList.forEach(name => {
+          let opt = document.createElement('option');
+          opt.value = name; 
+          opt.text = formatClassName(name);
+          select.add(opt);
+        });
+      }
+      if (currentUser && currentUser.role === 'admin') {
+        let newOpt = document.createElement('option');
+        newOpt.value = "__NEW_CLASS__";
+        newOpt.text = "➕ เพิ่มห้องเรียนใหม่...";
+        select.add(newOpt);
+      }
     }
 
     let targetCls = targetClassName ? classList.find(c => String(c).trim() === String(targetClassName).trim()) : null;
@@ -1471,11 +1630,142 @@
     }
 
     if (targetCls) { 
-      select.value = targetCls; 
+      if (select) select.value = targetCls; 
+      updateClassPickerDisplay(targetCls);
       switchClassInstantly(targetCls);
     } else {
+      updateClassPickerDisplay(null);
       hideLoading();
     }
+  }
+
+  function updateClassPickerDisplay(cls) {
+    const fullSpan = document.getElementById('classDisplayFull');
+    const shortSpan = document.getElementById('classDisplayShort');
+    if (cls) {
+      if (fullSpan) fullSpan.textContent = formatClassName(cls);
+      if (shortSpan) shortSpan.textContent = formatShortClassName(cls);
+    } else {
+      if (fullSpan) fullSpan.textContent = "เลือกชั้นเรียน";
+      if (shortSpan) shortSpan.textContent = "เลือกชั้น";
+    }
+  }
+
+  function openClassPickerModal() {
+    const container = document.getElementById('classListContainer');
+    if (!container) return;
+    container.innerHTML = '';
+    
+    const currentCls = document.getElementById('classSelect') ? document.getElementById('classSelect').value : null;
+
+    if (!classList || classList.length === 0) {
+      container.innerHTML = '<div style="text-align:center; padding: 20px; color:#888;">ไม่พบชั้นเรียนในระบบ</div>';
+    } else {
+      classList.forEach(cls => {
+        const item = document.createElement('div');
+        const isActive = (currentCls && (cls === currentCls || formatClassName(cls) === formatClassName(currentCls)));
+        item.className = `popup-item ${isActive ? 'active' : ''}`;
+        item.onclick = () => selectClassFromPopup(cls);
+        
+        const full = formatClassName(cls);
+        const short = formatShortClassName(cls);
+        
+        item.innerHTML = `
+          <div style="display:flex; align-items:center; min-width:0; flex:1;">
+            <i class="fas fa-chalkboard popup-item-icon"></i>
+            <span class="class-responsive-name" style="text-overflow:ellipsis; overflow:hidden; white-space:nowrap;">
+              <span class="class-name-full">${full}</span>
+              <span class="class-name-short">${short}</span>
+            </span>
+          </div>
+          ${isActive ? '<i class="fas fa-check-circle popup-check-icon"></i>' : ''}
+        `;
+        container.appendChild(item);
+      });
+    }
+
+    const adminRow = document.getElementById('adminAddClassRow');
+    if (adminRow) {
+      adminRow.style.display = (currentUser && currentUser.role === 'admin') ? 'block' : 'none';
+    }
+
+    openModal('classPickerModal');
+  }
+
+  function selectClassFromPopup(cls) {
+    closeModal('classPickerModal');
+    let select = document.getElementById('classSelect');
+    if (select) select.value = cls;
+    updateClassPickerDisplay(cls);
+    switchClassInstantly(cls);
+  }
+
+  function openStudentPickerModal() {
+    if (!cachedData || !cachedData.students || cachedData.students.length === 0) {
+      return;
+    }
+    const container = document.getElementById('studentListContainer');
+    if (!container) return;
+    container.innerHTML = '';
+
+    cachedData.students.forEach((s, idx) => {
+      const item = document.createElement('div');
+      const isActive = (idx === currentIndex);
+      item.className = `popup-item ${isActive ? 'active' : ''}`;
+      item.onclick = () => selectStudentFromPopup(idx);
+
+      item.innerHTML = `
+        <div style="display:flex; align-items:center; min-width:0; flex:1;">
+          <span class="popup-student-no">เลขที่ ${s.no}</span>
+          <span class="popup-student-name">${s.name}</span>
+        </div>
+        ${isActive ? '<i class="fas fa-check-circle popup-check-icon"></i>' : ''}
+      `;
+      container.appendChild(item);
+    });
+
+    openModal('studentPickerModal');
+  }
+
+  function selectStudentFromPopup(idx) {
+    closeModal('studentPickerModal');
+    currentIndex = idx;
+    lastFocusedIndex = null;
+    let navSelect = document.getElementById('studentNav');
+    if (navSelect) navSelect.value = idx;
+    renderUI();
+  }
+
+  function closeOnOverlayClick(e, id) {
+    if (e && e.target && e.target.id === id) {
+      closeModal(id);
+    }
+  }
+
+  function formatShortClassName(name) {
+    if (!name) return "";
+    var s = String(name).trim();
+    
+    // ประถมศึกษา เช่น ชั้นประถมศึกษาปีที่ 5/1 -> ป.5/1 หรือ ชั้นประถมศึกษาปีที่ 5 -> ป.5
+    var matchP = s.match(/^(?:ชั้น)?(?:ประถมศึกษาปีที่\s*|\.?[ปป]\.?\s*)(\d+)(?:[\/|\.](\d+))?$/);
+    if (matchP) {
+      return matchP[2] ? ("ป." + matchP[1] + "/" + matchP[2]) : ("ป." + matchP[1]);
+    }
+
+    // มัธยมศึกษา เช่น ชั้นมัธยมศึกษาปีที่ 1/2 -> ม.1/2 หรือ ม.1 -> ม.1
+    var matchM = s.match(/^(?:ชั้น)?(?:มัธยมศึกษาปีที่\s*|\.?[มม]\.?\s*)(\d+)(?:[\/|\.](\d+))?$/);
+    if (matchM) {
+      return matchM[2] ? ("ม." + matchM[1] + "/" + matchM[2]) : ("ม." + matchM[1]);
+    }
+
+    // อนุบาล เช่น ชั้นอนุบาลปีที่ 2/1 -> อ.2/1 หรือ อ.2 -> อ.2
+    var matchA = s.match(/^(?:ชั้น)?(?:อนุบาล(?:ปีที่)?\s*|\.?[ออ]\.?\s*)(\d+)(?:[\/|\.](\d+))?$/);
+    if (matchA) {
+      return matchA[2] ? ("อ." + matchA[1] + "/" + matchA[2]) : ("อ." + matchA[1]);
+    }
+
+    if (s.indexOf("ชั้น") === 0) return s.replace(/^ชั้น\s*/, "");
+    return s;
   }
 
   function switchClassInstantly(cls) {
