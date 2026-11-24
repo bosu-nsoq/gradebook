@@ -1,4 +1,4 @@
-const CACHE_NAME = 'gradebook-cache-v12';
+const CACHE_NAME = 'gradebook-cache-v13';
 const ASSETS_TO_CACHE = [
   './',
   './manifest.json',

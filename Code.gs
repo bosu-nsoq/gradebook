@@ -302,14 +302,23 @@ function formatUsersSheet(sheet) {
   } catch(e) {}
 }
 
+// ฟังก์ชันแปลง PIN เป็นสตริง 4 หลัก คงเลข 0 นำหน้าไว้เสมอ (เช่น 0001)
+function normalizePin(val) {
+  var s = String(val !== undefined && val !== null ? val : '').replace(/^'/, '').trim();
+  if (/^\d+$/.test(s) && s.length < 4) {
+    s = ("0000" + s).slice(-4);
+  }
+  return s;
+}
+
 function loginUserByPin(pin) {
   var sheet = getOrCreateUsersSheet();
   var data = sheet.getDataRange().getValues();
-  var cleanPin = String(pin).trim();
+  var cleanPin = normalizePin(pin);
 
   for (var i = 1; i < data.length; i++) {
     var row = data[i];
-    var userPin = String(row[3]).trim();
+    var userPin = normalizePin(row[3]);
     if (userPin === cleanPin) {
       return {
         success: true,
@@ -351,7 +360,7 @@ function getUsers() {
       userId: String(row[0]),
       name: String(row[1]),
       subject: String(row[2]),
-      pin: String(row[3]),
+      pin: normalizePin(row[3]),
       role: String(row[4] || 'user').toLowerCase()
     });
   }
@@ -371,20 +380,24 @@ function saveUser(userData) {
     }
   }
 
+  var pinStr = normalizePin(userData.pin);
+
   if (rowIndex > 0) {
     sheet.getRange(rowIndex, 2).setValue(userData.name);
     sheet.getRange(rowIndex, 3).setValue(userData.subject);
-    sheet.getRange(rowIndex, 4).setValue(String(userData.pin));
+    sheet.getRange(rowIndex, 4).setNumberFormat("@").setValue("'" + pinStr);
     sheet.getRange(rowIndex, 5).setValue(userData.role || "user");
   } else {
     sheet.appendRow([
       userId,
       userData.name,
       userData.subject,
-      String(userData.pin),
+      "'" + pinStr,
       userData.role || "user",
       new Date()
     ]);
+    var newRow = sheet.getLastRow();
+    sheet.getRange(newRow, 4).setNumberFormat("@").setValue("'" + pinStr);
   }
   return "Success";
 }

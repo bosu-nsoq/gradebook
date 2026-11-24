@@ -711,7 +711,7 @@
     <div class="student-center-info" onclick="openStudentPickerModal()" style="cursor: pointer;" title="แตะเพื่อเปิดป๊อปอัพเลือกนักเรียน">
       <span class="student-no-pill" id="studentNoPill">เลขที่ -</span>
       <h3 class="student-fullname-text" id="studentNameText">รอนักเรียน...</h3>
-      <div class="student-tap-hint" id="studentCountHint"><i class="fas fa-caret-down"></i> แตะเพื่อเลือกเลขที่</div>
+      <div class="student-tap-hint" id="studentCountHint"><i class="fas fa-caret-down"></i></div>
       <select id="studentNav" onchange="jumpToStudent()" style="display:none;" title="เลือกนักเรียน"></select>
     </div>
 
@@ -826,7 +826,7 @@
         </div>
         <div class="form-group">
           <label>รหัส PIN (4 หลัก)</label>
-          <input type="tel" class="form-control" id="formUserPin" maxlength="4" placeholder="ตัวเลข 4 หลัก เช่น 5678">
+          <input type="tel" class="form-control" id="formUserPin" maxlength="4" placeholder="ตัวเลข 4 หลัก เช่น 0001, 5678">
         </div>
         <div class="form-group">
           <label>สิทธิ์การใช้งาน (Role)</label>
@@ -923,6 +923,31 @@
     <div class="modal-footer">
       <button type="button" class="btn-quick-student" style="background:#eee; color:#555; box-shadow:none;" onclick="closeModal('addScoreModal')">ยกเลิก</button>
       <button type="button" class="btn-quick-student" onclick="submitScoreTopicForm()">บันทึกช่องคะแนน</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     MODAL 6: ADD CLASS (ป๊อปอัพเพิ่มชั้นเรียน ตามข้อ 1)
+     ============================================================ -->
+<div class="modal-overlay" id="addClassModal" onclick="closeOnOverlayClick(event, 'addClassModal')">
+  <div class="modal-card" style="max-width: 400px;">
+    <div class="modal-header">
+      <h3><i class="fas fa-chalkboard"></i> เพิ่มชั้นเรียนใหม่</h3>
+      <button type="button" class="modal-close-btn" onclick="closeModal('addClassModal')">&times;</button>
+    </div>
+    <div class="modal-body" style="padding: 16px 18px;">
+      <div class="form-group">
+        <label>ชื่อระดับชั้น / ห้องเรียน <span style="color:red;">*</span></label>
+        <input type="text" class="form-control" id="newClassNameInput" placeholder="เช่น ชั้นประถมศึกษาปีที่ 5/3 หรือ ม.1/2" onkeydown="if(event.key === 'Enter') submitCreateNewClass()">
+        <div style="font-size:12px; color:#666; margin-top:8px; line-height:1.5;">
+          💡 ระบบจะจัดรูปแบบชื่อเต็มให้อัตโนมัติ เช่น พิมพ์ <code>ป.5/3</code> จะบันทึกเป็น <code>ชั้นประถมศึกษาปีที่ 5/3</code>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn-quick-student" style="background:#eee; color:#555; box-shadow:none;" onclick="closeModal('addClassModal')">ยกเลิก</button>
+      <button type="button" class="btn-quick-student" onclick="submitCreateNewClass()">บันทึกชั้นเรียน</button>
     </div>
   </div>
 </div>
@@ -1173,12 +1198,21 @@
     };
   }
 
+  // ฟังก์ชันจัดรูปแบบ PIN เป็น 4 หลักคงเลข 0 นำหน้าไว้เสมอ (เช่น 0001)
+  function normalizePin(val) {
+    let s = String(val !== undefined && val !== null ? val : '').replace(/^'/, '').trim();
+    if (/^\d+$/.test(s) && s.length < 4) {
+      s = ("0000" + s).slice(-4);
+    }
+    return s;
+  }
+
   function handleMockCall(prop, args, successFn, failureFn) {
     setTimeout(() => {
       try {
         if (prop === "loginAndLoadAll") {
-          const pin = String(args[0]).trim();
-          const user = mockStore.users.find(u => u.pin === pin) || (pin === "8055" ? mockStore.users[0] : (pin === "1234" ? mockStore.users[1] : null));
+          const pin = normalizePin(args[0]);
+          const user = mockStore.users.find(u => normalizePin(u.pin) === pin) || (pin === "8055" ? mockStore.users[0] : (pin === "1234" ? mockStore.users[1] : null));
           if (user) {
             const classSet = {};
             mockStore.students.forEach(s => { if (s.className) classSet[formatClassName(s.className)] = true; });
@@ -1207,8 +1241,8 @@
           });
           successFn({ classes, classesData });
         } else if (prop === "loginUserByPin") {
-          const pin = String(args[0]).trim();
-          const user = mockStore.users.find(u => u.pin === pin);
+          const pin = normalizePin(args[0]);
+          const user = mockStore.users.find(u => normalizePin(u.pin) === pin);
           if (user) {
             successFn({ success: true, user: { userId: user.userId, name: user.name, subject: user.subject, role: user.role } });
           } else if (pin === "8055") {
@@ -1217,9 +1251,10 @@
             successFn({ success: false, message: "รหัส PIN ไม่ถูกต้อง" });
           }
         } else if (prop === "getUsers") {
-          successFn([...mockStore.users]);
+          successFn(mockStore.users.map(u => ({ ...u, pin: normalizePin(u.pin) })));
         } else if (prop === "saveUser") {
           const uData = args[0];
+          uData.pin = normalizePin(uData.pin);
           const idx = mockStore.users.findIndex(u => u.userId === uData.userId);
           if (idx >= 0) mockStore.users[idx] = { ...mockStore.users[idx], ...uData };
           else mockStore.users.push({ ...uData, row: mockStore.users.length + 2 });
@@ -1546,8 +1581,8 @@
       })
       .withFailureHandler(err => {
         console.warn("Login failure handler triggered, checking local fallback:", err);
-        const pin = currentEnteredPin;
-        const user = mockStore.users.find(u => u.pin === pin) || (pin === "8055" ? mockStore.users[0] : (pin === "1234" ? mockStore.users[1] : null));
+        const pin = normalizePin(currentEnteredPin);
+        const user = mockStore.users.find(u => normalizePin(u.pin) === pin) || (pin === "8055" ? mockStore.users[0] : (pin === "1234" ? mockStore.users[1] : null));
         if (user) {
           currentUser = { userId: user.userId, name: user.name, subject: user.subject, role: user.role, pin: pin };
           sessionStorage.setItem(SESSION_USER_KEY, JSON.stringify(currentUser));
@@ -1924,15 +1959,31 @@
   function createNewClassPrompt() {
     if (!currentUser || currentUser.role !== 'admin') {
       alert("สงวนสิทธิ์การสร้างห้องเรียนเฉพาะผู้ดูแลระบบ (Admin) เท่านั้น");
-      refreshClassList();
+      let currentVal = document.getElementById('classSelect').value;
+      if (currentVal === "__NEW_CLASS__") refreshClassList();
       return;
     }
-    let className = prompt("ระบุชื่อชั้นเรียนใหม่ (เช่น ชั้นประถมศึกษาปีที่ 5/3 หรือ ม.1/2):");
-    if (!className || !className.trim()) {
-      refreshClassList();
+    const input = document.getElementById('newClassNameInput');
+    if (input) input.value = "";
+    openModal('addClassModal');
+    setTimeout(() => { if (input) input.focus(); }, 150);
+  }
+
+  function submitCreateNewClass() {
+    if (!currentUser || currentUser.role !== 'admin') {
+      alert("สงวนสิทธิ์การสร้างห้องเรียนเฉพาะผู้ดูแลระบบ (Admin) เท่านั้น");
+      closeModal('addClassModal');
       return;
     }
-    let fullCls = formatClassName(className.trim());
+    const input = document.getElementById('newClassNameInput');
+    let className = input ? input.value.trim() : "";
+    if (!className) {
+      alert("กรุณาระบุชื่อชั้นเรียนใหม่ครับ");
+      if (input) input.focus();
+      return;
+    }
+    let fullCls = formatClassName(className);
+    closeModal('addClassModal');
     showLoading(`กำลังสร้างห้อง ${fullCls}...`);
     google.script.run
       .withSuccessHandler(res => {
@@ -2012,7 +2063,7 @@
     const countHint = document.getElementById('studentCountHint');
     if (noPill && student.no) noPill.innerText = `เลขที่ ${student.no}`;
     if (nameText && student.name) nameText.innerText = student.name;
-    if (countHint) countHint.innerHTML = `<i class="fas fa-caret-down"></i> แตะเพื่อเลือกเลขที่ (${currentIndex + 1}/${cachedData.students.length})`;
+    if (countHint) countHint.innerHTML = `<i class="fas fa-caret-down"></i> (${currentIndex + 1}/${cachedData.students.length})`;
     
     if (cachedData.headers) {
       cachedData.headers.forEach((h, idx) => {
@@ -2081,7 +2132,7 @@
     // แสดงเลขที่ และชื่อ-นามสกุล ในบรรทัดที่ชัดเจน ไม่เบียดซ้อนทับ
     noPill.innerText = `เลขที่ ${student.no}`;
     nameText.innerText = student.name;
-    countHint.innerHTML = `<i class="fas fa-caret-down"></i> แตะเพื่อเลือกเลขที่ (${currentIndex + 1}/${cachedData.students.length})`;
+    countHint.innerHTML = `<i class="fas fa-caret-down"></i> (${currentIndex + 1}/${cachedData.students.length})`;
 
     let html = '';
     cachedData.headers.forEach((h, idx) => {
@@ -2413,11 +2464,12 @@
         ? `<button type="button" class="tool-icon-btn" style="width:28px; height:28px; color:red; box-shadow:none;" onclick="deleteUserPrompt('${u.userId}', '${u.name}')"><i class="fas fa-trash"></i></button>`
         : '';
 
+      const pinDisplay = normalizePin(u.pin);
       html += `
         <div class="user-list-item">
           <div style="flex:1; min-width:0;">
             <div class="user-info-name">${u.name} ${roleBadge}</div>
-            <div class="user-info-sub">ID: ${u.userId} | วิชา: ${u.subject || '-'} | PIN: •••• (${u.pin})</div>
+            <div class="user-info-sub">ID: ${u.userId} | วิชา: ${u.subject || '-'} | PIN: •••• (${pinDisplay})</div>
           </div>
           <div style="display:flex; gap:4px;">
             <button type="button" class="tool-icon-btn" style="width:28px; height:28px; box-shadow:none;" onclick='editUserPrompt(${JSON.stringify(u)})'><i class="fas fa-pen"></i></button>
@@ -2444,7 +2496,7 @@
     document.getElementById('formUserId').value = u.userId;
     document.getElementById('formUserName').value = u.name;
     document.getElementById('formUserSubject').value = u.subject;
-    document.getElementById('formUserPin').value = u.pin;
+    document.getElementById('formUserPin').value = normalizePin(u.pin);
     document.getElementById('formUserRole').value = u.role || 'user';
     document.getElementById('userFormSection').style.display = 'block';
   }
@@ -2457,11 +2509,16 @@
     const userId = document.getElementById('formUserId').value.trim();
     const name = document.getElementById('formUserName').value.trim();
     const subject = document.getElementById('formUserSubject').value.trim();
-    const pin = document.getElementById('formUserPin').value.trim();
+    const rawPin = document.getElementById('formUserPin').value.trim();
     const role = document.getElementById('formUserRole').value;
 
-    if (!userId || !name || !pin || pin.length !== 4) {
+    if (!userId || !name || !rawPin) {
       return alert("กรุณาระบุข้อมูลให้ครบถ้วน และกำหนดรหัส PIN 4 หลัก");
+    }
+
+    const pin = normalizePin(rawPin);
+    if (pin.length !== 4) {
+      return alert("รหัส PIN ต้องเป็นตัวเลข 4 หลัก เช่น 0001 หรือ 1234");
     }
 
     const userData = { userId, name, subject, pin, role };
@@ -2587,6 +2644,12 @@
   function closeModal(id) {
     const el = document.getElementById(id);
     if (el) el.style.display = 'none';
+    if (id === 'addClassModal') {
+      const select = document.getElementById('classSelect');
+      if (select && select.value === '__NEW_CLASS__') {
+        refreshClassList();
+      }
+    }
   }
 </script>
 
