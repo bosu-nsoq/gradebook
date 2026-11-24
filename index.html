@@ -1560,7 +1560,14 @@
       .withSuccessHandler(res => {
         showCuteSaveToast(`🗑️ ลบ ${displayName} เรียบร้อยแล้ว`);
         delete allClassDataMap[cls];
-        refreshClassList();
+        
+        // อัปเดตรายการห้องเรียนที่เหลือจากผลลัพธ์ทันที โดยไม่ต้องส่ง network request ซ้ำ
+        let remaining = (res && res.remainingClasses && res.remainingClasses.length > 0)
+          ? res.remainingClasses.map(formatClassName)
+          : classList.filter(c => c !== cls && formatClassName(c) !== displayName);
+        
+        classList = remaining;
+        renderClassDropdownAndSelect();
       })
       .withFailureHandler(err => {
         hideLoading();
