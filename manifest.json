@@ -1,0 +1,19 @@
+{
+  "name": "Gradebook",
+  "short_name": "Gradebook",
+  "description": "แอปสำหรับบันทึกคะแนนนักเรียน",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#a1c4fd",
+  "theme_color": "#6c5ce7",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "https://i.postimg.cc/bwLY28yb/gradebook.png",
+      "sizes": "192x192 512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

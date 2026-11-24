@@ -1,0 +1,1231 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <base target="_top">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Gradebook</title>
+  <meta name="description" content="แอปสำหรับบันทึกคะแนนนักเรียน">
+  
+  <!-- Favicon & Touch Icons -->
+  <link rel="icon" type="image/png" href="https://i.postimg.cc/bwLY28yb/gradebook.png">
+  <link rel="shortcut icon" href="https://i.postimg.cc/bwLY28yb/gradebook.png">
+  <link rel="apple-touch-icon" href="https://i.postimg.cc/bwLY28yb/gradebook.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="https://i.postimg.cc/bwLY28yb/gradebook.png">
+  
+  <!-- PWA & Mobile Web App Meta Tags -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#6c5ce7">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Gradebook">
+  
+  <!-- Google Fonts & Font Awesome -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Mali:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <style>
+    /* --- 🎨 Theme Setup --- */
+    :root {
+      --primary: #6c5ce7;
+      --secondary: #a29bfe;
+      --glass-bg: rgba(255, 255, 255, 0.55);
+      --glass-border: rgba(255, 255, 255, 0.8);
+      --text-color: #2d3436;
+      --input-bg: #ffffff;
+      --success: #00b894;
+      --danger: #ff7675;
+      --card-shadow: 0 20px 50px rgba(108, 92, 231, 0.15);
+    }
+    
+    * { 
+      box-sizing: border-box; 
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      font-family: 'Mali', cursive;
+      margin: 0; padding: 0;
+      background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
+      background-image: linear-gradient(120deg, #a1c4fd 0%, #c2e9fb 100%);
+      background-size: 200% 200%;
+      animation: gradientAnim 15s ease infinite;
+      height: 100dvh;
+      width: 100vw;
+      display: flex; justify-content: center; align-items: center;
+      overflow: hidden;
+      color: var(--text-color);
+      touch-action: manipulation;
+    }
+
+    @keyframes gradientAnim {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .app-card {
+      background: var(--glass-bg);
+      backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px);
+      border: 2px solid var(--glass-border);
+      border-radius: 40px;
+      box-shadow: var(--card-shadow);
+      width: 90%; max-width: 420px; height: 95vh;
+      max-height: 840px;
+      padding: 24px;
+      display: flex; flex-direction: column;
+      position: relative;
+    }
+
+    /* --- Responsive Header (Single line on mobile vertical) --- */
+    .header { 
+      text-align: center; 
+      margin-bottom: 14px; 
+      position: relative;
+    }
+
+    .header-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      background: rgba(255, 255, 255, 0.65);
+      border: 1.5px solid rgba(255, 255, 255, 0.9);
+      padding: 8px 14px;
+      border-radius: 24px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+    }
+
+    .header-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+      flex: 1;
+    }
+
+    .header-logo {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      object-fit: cover;
+      flex-shrink: 0;
+      box-shadow: 0 2px 8px rgba(108, 92, 231, 0.2);
+    }
+
+    .header-text {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      min-width: 0;
+      flex: 1;
+    }
+
+    h2 { 
+      font-family: 'Mali', cursive;
+      margin: 0; 
+      font-weight: 700; 
+      font-size: 17px; 
+      color: var(--primary); 
+      letter-spacing: 0.3px;
+      line-height: 1.2;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      width: 100%;
+    }
+
+    .teacher-badge {
+      font-size: 13px; 
+      font-weight: 600;
+      color: #6c5ce7;
+      background: rgba(108, 92, 231, 0.12);
+      padding: 1px 8px;
+      border-radius: 12px;
+      margin-top: 2px;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      white-space: nowrap;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+
+    .header-btn {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      border: none;
+      background: #ffffff;
+      color: var(--primary);
+      font-size: 14px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+      transition: transform 0.15s, background-color 0.15s;
+    }
+    .header-btn:active { transform: scale(0.9); background: #f0f3ff; }
+
+    select, option { font-family: 'Mali', cursive !important; }
+
+    select#classSelect {
+      width: 100%; height: 50px; padding: 0 16px;
+      line-height: 50px; font-size: 16px; 
+      border: 1.5px solid rgba(255, 255, 255, 0.9); 
+      border-radius: 20px;
+      background: var(--input-bg);
+      font-weight: 700; color: #444;
+      outline: none; text-align: left; text-align-last: left;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+      appearance: none; margin-bottom: 12px;
+      cursor: pointer;
+      background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236c5ce7' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+      background-repeat: no-repeat;
+      background-position: right 16px center;
+      background-size: 16px;
+    }
+
+    /* --- Navigator --- */
+    .nav-bar {
+      display: flex; align-items: center; gap: 8px;
+      background: rgba(255,255,255,0.45); padding: 5px; border-radius: 25px;
+      margin-bottom: 12px; height: 80px; 
+      border: 1px solid rgba(255, 255, 255, 0.7);
+    }
+
+    .nav-btn {
+      width: 44px; height: 44px; border-radius: 50%; border: none;
+      background: white; color: var(--primary); font-size: 18px;
+      cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+      transition: 0.2s; flex-shrink: 0; 
+      display: flex; align-items: center; justify-content: center;
+    }
+    .nav-btn:active { transform: scale(0.9); }
+    
+    .student-wrapper {
+      flex-grow: 1; position: relative; height: 100%;
+      display: flex; align-items: center; justify-content: center;
+      overflow: hidden; 
+    }
+
+    #studentNameDisplay {
+      width: 100%; text-align: center;
+      display: flex; flex-direction: column; justify-content: center;
+      align-items: center; line-height: 1.2;
+    }
+
+    .name-line-1 { font-family: 'Mali', cursive; font-weight: 700; font-size: 19px; color: #2d3436; white-space: nowrap; }
+    .name-line-2 { font-family: 'Mali', cursive; font-weight: 700; font-size: 19px; color: #2d3436; white-space: nowrap; margin-top: 3px; }
+
+    #studentNav {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      opacity: 0; cursor: pointer;
+    }
+
+    /* --- Total Score --- */
+    .total-container {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 0 12px; margin-bottom: 10px; color: #555;
+      background: rgba(255, 255, 255, 0.4);
+      border-radius: 16px;
+      padding: 6px 14px;
+    }
+    .total-label { font-family: 'Mali', cursive; font-size: 15px; font-weight: 700; }
+    .total-value { font-family: 'Mali', cursive; font-size: 22px; font-weight: 700; color: var(--primary); }
+    .total-max { font-size: 14px; opacity: 0.65; }
+
+    /* --- Score List --- */
+    .score-list { 
+      flex-grow: 1; 
+      overflow-y: auto; 
+      padding-right: 4px; 
+      scrollbar-width: thin;
+      -webkit-overflow-scrolling: touch;
+    }
+    
+    .score-item {
+      display: flex; justify-content: space-between; align-items: center;
+      background: rgba(255,255,255,0.7); margin-bottom: 9px; padding: 10px 14px;
+      border-radius: 18px; transition: 0.2s;
+      border: 1px solid rgba(255, 255, 255, 0.8);
+    }
+    .score-item:focus-within { background: white; transform: scale(1.015); box-shadow: 0 5px 15px rgba(108, 92, 231, 0.1); }
+
+    .score-label { font-size: 15.5px; font-weight: 600; color: #444; flex: 1; padding-right: 10px; }
+    
+    .score-input {
+      width: 68px; height: 44px; text-align: center; font-size: 20px;
+      border: 1.5px solid transparent; border-radius: 14px; 
+      background: white; color: var(--primary); font-weight: 700; outline: none;
+      font-family: 'Mali', cursive; box-shadow: inset 0 2px 5px rgba(0,0,0,0.04);
+      transition: all 0.2s;
+    }
+
+    .score-input:focus { 
+      background: #f4f6ff; 
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.2); 
+    }
+    .score-input.low-score { color: #ff6b6b; background: #fff0f0; }
+
+    .btn-add {
+      margin-top: 10px; width: 100%; padding: 12px; border: none;
+      border-radius: 20px; background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+      color: white; font-family: 'Mali', cursive; font-weight: 700; 
+      cursor: pointer; font-size: 16px; box-shadow: 0 8px 20px rgba(108, 92, 231, 0.3);
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      transition: transform 0.15s;
+    }
+    .btn-add:active { transform: scale(0.98); }
+
+    /* --- Status Toast (Save indicator) --- */
+    #statusToast {
+      position: absolute;
+      top: 18px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-30px);
+      background: rgba(45, 52, 54, 0.92);
+      color: #ffffff;
+      padding: 6px 16px;
+      border-radius: 20px;
+      font-size: 13.5px;
+      font-weight: 600;
+      z-index: 80;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.25s ease;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+      white-space: nowrap;
+    }
+    #statusToast.visible {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+
+    /* --- Loading Overlay --- */
+    #loader {
+      position: absolute; inset: 0; background: rgba(255,255,255,0.88);
+      backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+      border-radius: 38px;
+      display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 90;
+      transition: opacity 0.2s ease;
+    }
+    .loading-text { 
+      margin-top: 14px; 
+      font-family: 'Mali', cursive; 
+      color: var(--primary); 
+      font-weight: 700; 
+      font-size: 15px;
+      text-align: center;
+      padding: 0 20px;
+    }
+
+    /* ============================================================
+       PIN LOCK OVERLAY & KEYPAD
+       ============================================================ */
+    #pinOverlay {
+      position: fixed; inset: 0; z-index: 9999;
+      background: linear-gradient(135deg, rgba(161, 196, 253, 0.95) 0%, rgba(194, 233, 251, 0.95) 100%);
+      backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 16px;
+    }
+    .pin-card {
+      background: rgba(255, 255, 255, 0.65);
+      border: 2px solid rgba(255, 255, 255, 0.85);
+      border-radius: 36px;
+      box-shadow: 0 20px 45px rgba(108, 92, 231, 0.18);
+      backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+      padding: 24px 20px;
+      width: 100%; max-width: 320px;
+      text-align: center;
+      transition: transform 0.2s;
+    }
+    .pin-logo {
+      width: 60px; height: 60px;
+      border-radius: 16px;
+      margin-bottom: 8px;
+      box-shadow: 0 4px 15px rgba(108, 92, 231, 0.25);
+    }
+    .pin-title {
+      margin: 0;
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--primary);
+    }
+    .pin-desc {
+      margin: 2px 0 6px;
+      font-size: 13px;
+      color: #636e72;
+    }
+    .pin-prompt {
+      margin: 0 0 14px 0;
+      color: var(--primary);
+      font-size: 14px;
+      font-weight: 600;
+      min-height: 20px;
+    }
+    .pin-dots-container {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      margin-bottom: 18px;
+    }
+    .pin-dot {
+      width: 15px; height: 15px;
+      border-radius: 50%;
+      border: 2px solid var(--primary);
+      background: transparent;
+      transition: all 0.18s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    .pin-dot.filled {
+      background: var(--primary);
+      transform: scale(1.18);
+      box-shadow: 0 0 10px rgba(108, 92, 231, 0.5);
+    }
+    .pin-keypad {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      max-width: 240px;
+      margin: 0 auto;
+    }
+    .pin-key {
+      aspect-ratio: 1;
+      border-radius: 50%;
+      border: 1.5px solid rgba(255, 255, 255, 0.9);
+      background: rgba(255, 255, 255, 0.8);
+      color: var(--text-color);
+      font-size: 21px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.05);
+      transition: transform 0.12s, background-color 0.12s;
+      font-family: 'Mali', cursive;
+    }
+    .pin-key:active {
+      transform: scale(0.92);
+      background: var(--primary);
+      color: white;
+    }
+    .pin-key.pin-tool {
+      font-size: 16px;
+      background: rgba(255, 255, 255, 0.5);
+      color: var(--primary);
+    }
+
+    /* Error Shake Animation */
+    @keyframes shakeAnimation {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-9px); }
+      40%, 80% { transform: translateX(9px); }
+    }
+    .shake-error {
+      animation: shakeAnimation 0.35s ease-in-out;
+    }
+
+    /* --- Responsive Queries for Mobile Portrait Optimization --- */
+    @media only screen and (max-width: 480px) {
+      .app-card { 
+        padding: 16px; 
+        width: 96%; 
+        height: 98dvh; 
+        border-radius: 28px; 
+      }
+      #loader { border-radius: 26px; }
+      
+      .header-bar {
+        padding: 6px 10px;
+        border-radius: 18px;
+        gap: 8px;
+      }
+      .header-logo { width: 32px; height: 32px; border-radius: 8px; }
+      h2 { font-size: 15px; white-space: nowrap; }
+      .teacher-badge { font-size: 11.5px; padding: 1px 6px; white-space: nowrap; }
+      .header-btn { width: 30px; height: 30px; font-size: 12.5px; }
+
+      select#classSelect { 
+        font-size: 14.5px; 
+        height: 46px; 
+        line-height: 46px; 
+        padding: 0 12px;
+        margin-bottom: 10px;
+        border-radius: 16px;
+      }
+      .name-line-1, .name-line-2 { font-size: 17.5px; }
+      .nav-bar { height: 72px; margin-bottom: 10px; }
+      .nav-btn { width: 40px; height: 40px; font-size: 16px; }
+      .total-container { padding: 4px 10px; margin-bottom: 8px; }
+      .total-label { font-size: 13.5px; }
+      .total-value { font-size: 20px; }
+      .score-item { padding: 8px 12px; margin-bottom: 8px; border-radius: 15px; }
+      .score-label { font-size: 14.5px; }
+      .score-input { width: 62px; height: 40px; font-size: 18px; border-radius: 12px; }
+      .btn-add { padding: 11px; font-size: 15px; border-radius: 18px; }
+      
+      .pin-card { padding: 20px 16px; max-width: 300px; border-radius: 28px; }
+      .pin-logo { width: 52px; height: 52px; }
+      .pin-title { font-size: 19px; }
+      .pin-key { font-size: 20px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ============================================================
+     PIN LOCK OVERLAY (ความปลอดภัยสำหรับครูผู้สอน)
+     ============================================================ -->
+<div id="pinOverlay">
+  <div class="pin-card" id="pinCard">
+    <img src="https://i.postimg.cc/bwLY28yb/gradebook.png" alt="Gradebook Logo" class="pin-logo">
+    <h3 class="pin-title">Gradebook</h3>
+    <p class="pin-desc">แอปสำหรับบันทึกคะแนนนักเรียน</p>
+    <p id="pinMsg" class="pin-prompt">กรุณากรอกรหัส PIN 4 หลัก</p>
+
+    <div class="pin-dots-container">
+      <span class="pin-dot" id="dot-0"></span>
+      <span class="pin-dot" id="dot-1"></span>
+      <span class="pin-dot" id="dot-2"></span>
+      <span class="pin-dot" id="dot-3"></span>
+    </div>
+
+    <div class="pin-keypad">
+      <button type="button" class="pin-key" onclick="pressPin('1')">1</button>
+      <button type="button" class="pin-key" onclick="pressPin('2')">2</button>
+      <button type="button" class="pin-key" onclick="pressPin('3')">3</button>
+      <button type="button" class="pin-key" onclick="pressPin('4')">4</button>
+      <button type="button" class="pin-key" onclick="pressPin('5')">5</button>
+      <button type="button" class="pin-key" onclick="pressPin('6')">6</button>
+      <button type="button" class="pin-key" onclick="pressPin('7')">7</button>
+      <button type="button" class="pin-key" onclick="pressPin('8')">8</button>
+      <button type="button" class="pin-key" onclick="pressPin('9')">9</button>
+      <button type="button" class="pin-key pin-tool" onclick="promptChangePin()" title="ตั้งค่าระบบ / เปลี่ยนรหัส PIN"><i class="fas fa-cog"></i></button>
+      <button type="button" class="pin-key" onclick="pressPin('0')">0</button>
+      <button type="button" class="pin-key pin-tool" onclick="deletePin()" title="ลบตัวเลข"><i class="fas fa-backspace"></i></button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     MAIN APP CARD
+     ============================================================ -->
+<div class="app-card">
+  
+  <!-- Mini Status Toast -->
+  <div id="statusToast"><i class="fas fa-check-circle" style="color:var(--success)"></i> บันทึกข้อมูลสำเร็จ</div>
+
+  <!-- Header Bar -->
+  <div class="header">
+    <div class="header-bar">
+      <div class="header-brand">
+        <img src="https://i.postimg.cc/bwLY28yb/gradebook.png" alt="Gradebook" class="header-logo">
+        <div class="header-text">
+          <h2>คะแนนวิชาภาษาไทย</h2>
+          <span class="teacher-badge"><i class="fas fa-chalkboard-teacher"></i> ครูบอส</span>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button type="button" class="header-btn" onclick="fetchData()" title="รีเฟรชข้อมูลล่าสุด"><i class="fas fa-rotate" id="refreshBtnIcon"></i></button>
+        <button type="button" class="header-btn" onclick="lockApp()" title="ล็อคหน้าจอ"><i class="fas fa-lock"></i></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Class Selector -->
+  <select id="classSelect" onchange="onClassSelectChange()">
+    <option value="" disabled selected>กำลังโหลดห้องเรียน...</option>
+  </select>
+
+  <!-- Student Navigator -->
+  <div class="nav-bar">
+    <button type="button" class="nav-btn" onclick="nav(-1)" aria-label="นักเรียนคนก่อนหน้า"><i class="fas fa-chevron-left"></i></button>
+    
+    <div class="student-wrapper">
+      <div id="studentNameDisplay">
+        <div class="name-line-1">รอนักเรียน...</div>
+      </div>
+      
+      <select id="studentNav" onchange="jumpToStudent()" title="เลือกนักเรียน">
+        <option>รอนักเรียน...</option>
+      </select>
+    </div>
+
+    <button type="button" class="nav-btn" onclick="nav(1)" aria-label="นักเรียนคนถัดไป"><i class="fas fa-chevron-right"></i></button>
+  </div>
+
+  <!-- Accumulated Total Score -->
+  <div class="total-container">
+    <div class="total-label">คะแนนรวมสะสม</div>
+    <div>
+      <span class="total-value" id="totalDisplay">0</span>
+      <span class="total-max">/ <span id="maxTotalDisplay">0</span></span>
+    </div>
+  </div>
+
+  <!-- Score Items List -->
+  <div id="scoreContainer" class="score-list">
+    <div style="text-align:center; margin-top:60px; color:rgba(0,0,0,0.35);">
+      <i class="fas fa-folder-open fa-3x"></i>
+      <br><br>
+      <span style="font-family:'Mali'">เลือกห้องเรียนเพื่อเริ่มงาน</span>
+    </div>
+  </div>
+
+  <!-- Add Score Topic Button -->
+  <button type="button" class="btn-add" onclick="addTopic()">
+    <i class="fas fa-plus-circle"></i> เพิ่มช่องคะแนน
+  </button>
+
+  <!-- Smooth Loading Overlay -->
+  <div id="loader">
+    <i class="fas fa-circle-notch fa-spin fa-3x" style="color:var(--primary)"></i>
+    <div class="loading-text" id="loaderText">กำลังโหลดข้อมูล...</div>
+  </div>
+</div>
+
+<script>
+  /**
+   * ============================================================
+   * 1. GAS API Bridge (Dual Mode: Apps Script & GitHub Pages)
+   * ============================================================
+   */
+  const DEFAULT_GAS_URL = "";
+  const GAS_URL_KEY = "gradebook_gas_url";
+
+  function getGasUrl() {
+    return localStorage.getItem(GAS_URL_KEY) || DEFAULT_GAS_URL;
+  }
+
+  // จำลองข้อมูลตัวอย่างเมื่อเปิดบน GitHub Pages โดยยังไม่ได้เชื่อมโยง Google Apps Script
+  let mockStore = {
+    classes: ["ป.5/1", "ป.5/2", "ป.6/1"],
+    data: {
+      "ป.5/1": {
+        headers: [
+          { name: "คะแนนเก็บ (10)", colIndex: 2, max: 10 },
+          { name: "ใบงานที่ 1 (10)", colIndex: 3, max: 10 },
+          { name: "สอบกลางภาค (20)", colIndex: 4, max: 20 }
+        ],
+        students: [
+          { row: 2, no: 1, name: "ด.ช. ตัวอย่าง รักเรียน", scores: { "คะแนนเก็บ (10)": 9, "ใบงานที่ 1 (10)": 8, "สอบกลางภาค (20)": 18 } },
+          { row: 3, no: 2, name: "ด.ญ. มานี มีตา", scores: { "คะแนนเก็บ (10)": 10, "ใบงานที่ 1 (10)": 10, "สอบกลางภาค (20)": 19 } },
+          { row: 4, no: 3, name: "ด.ช. ชูใจ ใจดี", scores: { "คะแนนเก็บ (10)": 8, "ใบงานที่ 1 (10)": 7, "สอบกลางภาค (20)": 15 } },
+          { row: 5, no: 4, name: "ด.ญ. ปิติ สุขใจ", scores: { "คะแนนเก็บ (10)": 7, "ใบงานที่ 1 (10)": 9, "สอบกลางภาค (20)": 16 } },
+          { row: 6, no: 5, name: "ด.ช. วีระ มานะ", scores: { "คะแนนเก็บ (10)": 10, "ใบงานที่ 1 (10)": 9, "สอบกลางภาค (20)": 17 } }
+        ]
+      },
+      "ป.5/2": {
+        headers: [
+          { name: "คะแนนเก็บ (10)", colIndex: 2, max: 10 },
+          { name: "สอบกลางภาค (20)", colIndex: 3, max: 20 }
+        ],
+        students: [
+          { row: 2, no: 1, name: "ด.ช. สมศักดิ์ สดใส", scores: { "คะแนนเก็บ (10)": 8, "สอบกลางภาค (20)": 16 } },
+          { row: 3, no: 2, name: "ด.ญ. สมใจ มั่นคง", scores: { "คะแนนเก็บ (10)": 9, "สอบกลางภาค (20)": 17 } }
+        ]
+      },
+      "ป.6/1": {
+        headers: [
+          { name: "คะแนนเก็บ (10)", colIndex: 2, max: 10 },
+          { name: "สอบกลางภาค (20)", colIndex: 3, max: 20 }
+        ],
+        students: [
+          { row: 2, no: 1, name: "ด.ช. เก่งกล้า ท้าทาย", scores: { "คะแนนเก็บ (10)": 10, "สอบกลางภาค (20)": 20 } },
+          { row: 3, no: 2, name: "ด.ญ. สวยสม นิยมไทย", scores: { "คะแนนเก็บ (10)": 9, "สอบกลางภาค (20)": 18 } }
+        ]
+      }
+    }
+  };
+
+  function handleMockCall(prop, args, successFn, failureFn) {
+    setTimeout(() => {
+      try {
+        if (prop === "getAllClassNames") {
+          successFn([...mockStore.classes]);
+        } else if (prop === "getClassData") {
+          const cls = args[0];
+          successFn(mockStore.data[cls] || { headers: [], students: [] });
+        } else if (prop === "saveScore") {
+          const [cls, row, colIndex, val] = args;
+          if (mockStore.data[cls]) {
+            const student = mockStore.data[cls].students.find(s => s.row === row);
+            const header = mockStore.data[cls].headers.find(h => h.colIndex === colIndex);
+            if (student && header) {
+              student.scores[header.name] = val;
+            }
+          }
+          successFn("Success");
+        } else if (prop === "addHeader") {
+          const [cls, headerName] = args;
+          if (mockStore.data[cls]) {
+            let max = 100;
+            let match = headerName.match(/\((\d+)\)/);
+            if (match) max = parseInt(match[1]);
+            const colIndex = mockStore.data[cls].headers.length + 2;
+            mockStore.data[cls].headers.push({ name: headerName, colIndex: colIndex, max: max });
+          }
+          successFn("Success");
+        } else if (prop === "createNewClass") {
+          const cls = args[0];
+          if (mockStore.classes.includes(cls)) {
+            successFn("Duplicate");
+          } else {
+            mockStore.classes.push(cls);
+            mockStore.data[cls] = {
+              headers: [
+                { name: "คะแนนเก็บ (10)", colIndex: 2, max: 10 },
+                { name: "สอบกลางภาค (20)", colIndex: 3, max: 20 }
+              ],
+              students: [
+                { row: 2, no: 1, name: "ด.ช. ตัวอย่าง รักเรียน", scores: {} },
+                { row: 3, no: 2, name: "ด.ญ. มานี มีตา", scores: {} }
+              ]
+            };
+            successFn("Success");
+          }
+        } else {
+          failureFn(new Error("ฟังก์ชันไม่รองรับในระบบจำลอง"));
+        }
+      } catch(err) {
+        failureFn(err);
+      }
+    }, 150);
+  }
+
+  function createGasProxy(successFn, failureFn) {
+    const runner = {
+      successFn: successFn || function() {},
+      failureFn: failureFn || function(err) {
+        console.warn("GAS Warning:", err);
+        showLoader(false);
+      },
+      withSuccessHandler: function(fn) {
+        return createGasProxy(fn, this.failureFn);
+      },
+      withFailureHandler: function(fn) {
+        return createGasProxy(this.successFn, fn);
+      }
+    };
+
+    return new Proxy(runner, {
+      get: function(target, prop) {
+        if (prop in target) return target[prop];
+        return function(...args) {
+          const gasUrl = getGasUrl();
+          if (gasUrl) {
+            const encodedArgs = encodeURIComponent(JSON.stringify(args));
+            const getUrl = `${gasUrl}?action=${encodeURIComponent(prop)}&args=${encodedArgs}`;
+            fetch(getUrl)
+              .then(res => {
+                if (!res.ok) throw new Error("HTTP " + res.status);
+                return res.json();
+              })
+              .then(data => {
+                if (data && data.error) {
+                  target.failureFn(new Error(data.error));
+                } else {
+                  target.successFn(data);
+                }
+              })
+              .catch(err => {
+                target.failureFn(err);
+              });
+          } else {
+            handleMockCall(prop, args, target.successFn, target.failureFn);
+          }
+        };
+      }
+    });
+  }
+
+  if (!window.google || !window.google.script || !window.google.script.run) {
+    window.google = window.google || {};
+    window.google.script = window.google.script || {};
+    window.google.script.run = createGasProxy();
+  }
+
+  /**
+   * ============================================================
+   * 2. PIN LOCK & AUTHENTICATION
+   * ============================================================
+   */
+  const PIN_STORAGE_KEY = "gradebook_pin_v1";
+  const UNLOCKED_KEY = "gradebook_unlocked_session";
+  let currentEnteredPin = "";
+
+  function getSavedPin() {
+    return localStorage.getItem(PIN_STORAGE_KEY) || "8055";
+  }
+
+  function checkLockState() {
+    if (sessionStorage.getItem(UNLOCKED_KEY) === 'true') {
+      document.getElementById('pinOverlay').style.display = 'none';
+    } else {
+      document.getElementById('pinOverlay').style.display = 'flex';
+      currentEnteredPin = "";
+      updatePinDots();
+      const msg = document.getElementById('pinMsg');
+      if (msg) {
+        msg.innerText = "กรุณากรอกรหัส PIN 4 หลัก";
+        msg.style.color = "var(--primary)";
+      }
+    }
+  }
+
+  function lockApp() {
+    sessionStorage.removeItem(UNLOCKED_KEY);
+    checkLockState();
+  }
+
+  function pressPin(num) {
+    if (currentEnteredPin.length < 4) {
+      currentEnteredPin += num;
+      updatePinDots();
+      if (currentEnteredPin.length === 4) {
+        setTimeout(verifyPin, 120);
+      }
+    }
+  }
+
+  function deletePin() {
+    if (currentEnteredPin.length > 0) {
+      currentEnteredPin = currentEnteredPin.slice(0, -1);
+      updatePinDots();
+    }
+  }
+
+  function updatePinDots() {
+    for (let i = 0; i < 4; i++) {
+      const dot = document.getElementById('dot-' + i);
+      if (dot) {
+        if (i < currentEnteredPin.length) {
+          dot.classList.add('filled');
+        } else {
+          dot.classList.remove('filled');
+        }
+      }
+    }
+  }
+
+  function verifyPin() {
+    const correctPin = getSavedPin();
+    if (currentEnteredPin === correctPin) {
+      sessionStorage.setItem(UNLOCKED_KEY, 'true');
+      const pinOverlay = document.getElementById('pinOverlay');
+      pinOverlay.style.opacity = '0';
+      pinOverlay.style.transition = 'opacity 0.25s ease';
+      setTimeout(() => {
+        pinOverlay.style.display = 'none';
+        pinOverlay.style.opacity = '1';
+      }, 250);
+      currentEnteredPin = "";
+    } else {
+      const pinCard = document.getElementById('pinCard');
+      const msg = document.getElementById('pinMsg');
+      if (pinCard) pinCard.classList.add('shake-error');
+      if (msg) {
+        msg.innerText = "❌ รหัส PIN ไม่ถูกต้อง";
+        msg.style.color = "#ff4757";
+      }
+      setTimeout(() => {
+        if (pinCard) pinCard.classList.remove('shake-error');
+        currentEnteredPin = "";
+        updatePinDots();
+        if (msg) {
+          msg.innerText = "กรุณากรอกรหัส PIN 4 หลัก";
+          msg.style.color = "var(--primary)";
+        }
+      }, 1000);
+    }
+  }
+
+  function promptChangePin() {
+    const choice = prompt("การตั้งค่าระบบ Gradebook:\n1. เปลี่ยนรหัส PIN\n2. ตั้งค่า Google Apps Script Web App URL\n\nพิมพ์ 1 หรือ 2 เพื่อดำเนินการ:");
+    if (choice === '1') {
+      const oldPin = prompt("กรุณาระบุรหัส PIN ปัจจุบัน:");
+      if (oldPin === getSavedPin()) {
+        const newPin = prompt("กรุณากำหนดรหัส PIN 4 หลักใหม่ (เฉพาะตัวเลข):");
+        if (newPin && newPin.length === 4 && /^\d+$/.test(newPin)) {
+          localStorage.setItem(PIN_STORAGE_KEY, newPin);
+          alert("✅ เปลี่ยนรหัส PIN สำเร็จเรียบร้อย!");
+        } else {
+          alert("⚠️ รหัส PIN ต้องเป็นตัวเลข 4 หลักเท่านั้น");
+        }
+      } else if (oldPin !== null) {
+        alert("❌ รหัส PIN ปัจจุบันไม่ถูกต้อง");
+      }
+    } else if (choice === '2') {
+      const currentUrl = localStorage.getItem(GAS_URL_KEY) || "";
+      const newUrl = prompt("ใส่ Google Apps Script Web App URL (ลงท้ายด้วย /exec):", currentUrl);
+      if (newUrl !== null) {
+        localStorage.setItem(GAS_URL_KEY, newUrl.trim());
+        alert("✅ บันทึก Google Apps Script URL เรียบร้อย ระบบจะโหลดข้อมูลใหม่");
+        location.reload();
+      }
+    }
+  }
+
+  // รองรับการกดแป้นพิมพ์ตัวเลขบนคอมพิวเตอร์
+  window.addEventListener('keydown', function(e) {
+    const pinOverlay = document.getElementById('pinOverlay');
+    if (pinOverlay && pinOverlay.style.display !== 'none') {
+      if (e.key >= '0' && e.key <= '9') {
+        pressPin(e.key);
+      } else if (e.key === 'Backspace') {
+        deletePin();
+      } else if (e.key === 'Escape') {
+        currentEnteredPin = "";
+        updatePinDots();
+      }
+    }
+  });
+
+  /**
+   * ============================================================
+   * 3. UI STATE, LOADING & STATUS TOAST
+   * ============================================================
+   */
+  let cachedData = null;
+  let currentIndex = 0;
+  let lastFocusedIndex = null;
+  let toastTimer = null;
+
+  function showLoader(show, text = "กำลังทำงาน...") {
+    const loader = document.getElementById('loader');
+    const loaderText = document.getElementById('loaderText');
+    if (show) {
+      if (loaderText) loaderText.innerText = text;
+      loader.style.display = 'flex';
+    } else {
+      loader.style.display = 'none';
+    }
+  }
+
+  function showStatusToast(status, message) {
+    const toast = document.getElementById('statusToast');
+    if (!toast) return;
+    
+    let icon = '<i class="fas fa-check-circle" style="color:var(--success)"></i>';
+    if (status === 'saving') {
+      icon = '<i class="fas fa-spinner fa-spin" style="color:var(--secondary)"></i>';
+    } else if (status === 'error') {
+      icon = '<i class="fas fa-exclamation-circle" style="color:var(--danger)"></i>';
+    }
+    
+    toast.innerHTML = `${icon} <span>${message}</span>`;
+    toast.classList.add('visible');
+    
+    if (toastTimer) clearTimeout(toastTimer);
+    if (status !== 'saving') {
+      toastTimer = setTimeout(() => {
+        toast.classList.remove('visible');
+      }, 1800);
+    }
+  }
+
+  window.onload = function() {
+    checkLockState();
+    refreshClassList();
+    
+    // ลงทะเบียน Service Worker สำหรับ PWA
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./sw.js').catch(() => {});
+    }
+  };
+
+  /**
+   * ============================================================
+   * 4. DATA LOGIC & RENDERING
+   * ============================================================
+   */
+  function refreshClassList(selectClassName = null) {
+    showLoader(true, "กำลังโหลดรายชื่อห้องเรียน...");
+    google.script.run
+      .withSuccessHandler(names => {
+        let select = document.getElementById('classSelect');
+        select.innerHTML = '<option value="" disabled selected>เลือกห้องเรียน</option>';
+        if (names && names.length > 0) {
+          names.forEach(name => {
+            if(name !== "Config") { 
+              let opt = document.createElement('option');
+              opt.value = name; 
+              opt.text = formatClassName(name);
+              select.add(opt);
+            }
+          });
+        }
+        
+        // เพิ่มตัวเลือกสร้างห้องเรียนใหม่
+        let newOpt = document.createElement('option');
+        newOpt.value = "__NEW_CLASS__";
+        newOpt.text = "➕ เพิ่มห้องเรียนใหม่...";
+        select.add(newOpt);
+
+        showLoader(false);
+
+        if (selectClassName) { 
+          select.value = selectClassName; 
+          fetchData(); 
+        } else if (names && names.length > 0) {
+          select.value = names[0];
+          fetchData();
+        }
+      })
+      .withFailureHandler(err => {
+        showLoader(false);
+        console.error("Fetch classes error:", err);
+      })
+      .getAllClassNames();
+  }
+
+  function formatClassName(shortName) {
+    if (shortName.startsWith("ป.")) return shortName.replace("ป.", "ชั้นประถมศึกษาปีที่ ");
+    if (shortName.startsWith("ม.")) return shortName.replace("ม.", "ชั้นมัธยมศึกษาปีที่ ");
+    return shortName;
+  }
+
+  function onClassSelectChange() {
+    let select = document.getElementById('classSelect');
+    if (select.value === "__NEW_CLASS__") {
+      createNewClassPrompt();
+      return;
+    }
+    fetchData();
+  }
+
+  function createNewClassPrompt() {
+    let className = prompt("ระบุชื่อชั้นเรียนใหม่ (เช่น ป.5/3 หรือ ม.2/1):");
+    if (!className || !className.trim()) {
+      refreshClassList();
+      return;
+    }
+    showLoader(true, "กำลังสร้างชั้นเรียนใหม่...");
+    google.script.run
+      .withSuccessHandler(res => {
+        showLoader(false);
+        if (res === "Duplicate") {
+          alert("ชื่อห้องเรียนนี้มีอยู่แล้วในระบบ");
+          refreshClassList();
+        } else {
+          alert("✅ สร้างห้องเรียน " + className.trim() + " สำเร็จ");
+          refreshClassList(className.trim());
+        }
+      })
+      .withFailureHandler(err => {
+        showLoader(false);
+        alert("เกิดข้อผิดพลาดในการสร้างห้องเรียน: " + err);
+        refreshClassList();
+      })
+      .createNewClass(className.trim());
+  }
+
+  function fetchData() {
+    let cls = document.getElementById('classSelect').value;
+    if (!cls || cls === "__NEW_CLASS__") return;
+    
+    const refreshBtnIcon = document.getElementById('refreshBtnIcon');
+    if (refreshBtnIcon) refreshBtnIcon.classList.add('fa-spin');
+    showLoader(true, "กำลังดึงข้อมูลนักเรียนและคะแนน...");
+
+    google.script.run
+      .withSuccessHandler(data => {
+        cachedData = data || { students: [], headers: [] };
+        currentIndex = 0;
+        lastFocusedIndex = null; 
+        populateStudentDropdown();
+        renderUI();
+        showLoader(false);
+        if (refreshBtnIcon) refreshBtnIcon.classList.remove('fa-spin');
+      })
+      .withFailureHandler(err => {
+        showLoader(false);
+        if (refreshBtnIcon) refreshBtnIcon.classList.remove('fa-spin');
+        console.error("Fetch data error:", err);
+      })
+      .getClassData(cls);
+  }
+
+  function populateStudentDropdown() {
+    let select = document.getElementById('studentNav');
+    select.innerHTML = ''; 
+    if(!cachedData || !cachedData.students || cachedData.students.length === 0) {
+      select.innerHTML = '<option>ไม่พบข้อมูลนักเรียน</option>';
+      return;
+    }
+    cachedData.students.forEach((s, index) => {
+      let opt = document.createElement('option');
+      opt.value = index;
+      opt.text = `เลขที่ ${s.no}`;
+      select.add(opt);
+    });
+  }
+
+  function jumpToStudent() {
+    currentIndex = parseInt(document.getElementById('studentNav').value);
+    lastFocusedIndex = null; 
+    renderUI();
+  }
+
+  function renderUI() {
+    if (!cachedData || !cachedData.students || cachedData.students.length === 0) {
+      document.getElementById('studentNameDisplay').innerHTML = '<div class="name-line-1">ไม่พบข้อมูลนักเรียน</div>';
+      document.getElementById('scoreContainer').innerHTML = '<div style="text-align:center; margin-top:50px; color:rgba(0,0,0,0.3);"><i class="fas fa-user-slash fa-2x"></i><br><br>ไม่มีรายชื่อนักเรียนในห้องนี้</div>';
+      document.getElementById('totalDisplay').innerText = "0";
+      document.getElementById('maxTotalDisplay').innerText = "0";
+      return;
+    }
+
+    let student = cachedData.students[currentIndex];
+    document.getElementById('studentNav').value = currentIndex;
+    
+    // แยกชื่อ-นามสกุลเพื่อแสดงผลตรงกลาง
+    let fullName = student.name.trim();
+    let lastSpace = fullName.lastIndexOf(" ");
+    let first = (lastSpace !== -1) ? fullName.substring(0, lastSpace) : fullName;
+    let last = (lastSpace !== -1) ? fullName.substring(lastSpace + 1) : "";
+
+    document.getElementById('studentNameDisplay').innerHTML = `
+      <div class="name-line-1">${student.no}. ${first}</div>
+      <div class="name-line-2">${last}</div>
+    `;
+
+    let html = '';
+    cachedData.headers.forEach((h, idx) => {
+      let score = student.scores[h.name];
+      if (score === undefined || score === null) score = "";
+      let lowClass = (score !== "" && parseFloat(score) < (h.max / 2)) ? "low-score" : "";
+      html += `
+        <div class="score-item">
+          <div class="score-label">${h.name}</div>
+          <input type="tel" class="score-input ${lowClass}" 
+            id="input-${idx}" value="${score}" placeholder="-"
+            onfocus="setFocus(${idx})" oninput="validate(this, ${h.max}, ${idx})"
+            onkeydown="handleEnter(event, ${idx})" onchange="save(this, '${h.name}', ${h.colIndex})">
+        </div>`;
+    });
+    document.getElementById('scoreContainer').innerHTML = html;
+    calcTotal();
+    
+    if (lastFocusedIndex !== null) {
+      let input = document.getElementById('input-' + lastFocusedIndex);
+      if (input) input.focus();
+    }
+  }
+
+  function setFocus(idx) { lastFocusedIndex = idx; }
+
+  function handleEnter(e, idx) {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      let next = document.getElementById(`input-${idx + 1}`);
+      if (next) {
+        next.focus();
+      } else {
+        document.getElementById(`input-${idx}`).blur();
+      }
+    }
+  }
+
+  function validate(el, max, idx) {
+    let val = el.value.replace(/[^0-9]/g, '');
+    if (val !== "") {
+      let num = parseInt(val);
+      if (num > max) num = max;
+      el.value = num;
+    } else { 
+      el.value = ""; 
+    }
+    let numVal = parseInt(el.value);
+    if (!isNaN(numVal) && numVal < (max / 2)) {
+      el.classList.add("low-score");
+    } else {
+      el.classList.remove("low-score");
+    }
+    
+    if (cachedData && cachedData.students && cachedData.students[currentIndex]) {
+      cachedData.students[currentIndex].scores[cachedData.headers[idx].name] = el.value;
+    }
+    calcTotal();
+  }
+
+  function calcTotal() {
+    if (!cachedData || !cachedData.students || cachedData.students.length === 0) return;
+    let student = cachedData.students[currentIndex];
+    let total = 0, max = 0;
+    cachedData.headers.forEach(h => {
+      let val = parseInt(student.scores[h.name]);
+      if (!isNaN(val)) total += val;
+      max += h.max;
+    });
+    document.getElementById('totalDisplay').innerText = total;
+    document.getElementById('maxTotalDisplay').innerText = max;
+  }
+
+  function nav(dir) {
+    if (!cachedData || !cachedData.students) return;
+    let next = currentIndex + dir;
+    if (next >= 0 && next < cachedData.students.length) {
+      currentIndex = next;
+      renderUI();
+    }
+  }
+
+  function save(el, headerName, colIndex) {
+    let cls = document.getElementById('classSelect').value;
+    if (!cls || !cachedData || !cachedData.students || !cachedData.students[currentIndex]) return;
+    
+    showStatusToast('saving', 'กำลังบันทึกคะแนน...');
+    
+    google.script.run
+      .withSuccessHandler(res => {
+        showStatusToast('success', 'บันทึกคะแนนเรียบร้อย');
+      })
+      .withFailureHandler(err => {
+        showStatusToast('error', 'บันทึกไม่สำเร็จ ลองอีกครั้ง');
+        console.error("Save score error:", err);
+      })
+      .saveScore(cls, cachedData.students[currentIndex].row, colIndex, el.value);
+  }
+
+  function addTopic() {
+    let cls = document.getElementById('classSelect').value;
+    if (!cls || cls === "__NEW_CLASS__") return alert("กรุณาเลือกห้องเรียนก่อนครับ");
+    
+    let name = prompt("ชื่อช่องคะแนน (เช่น ใบงานที่ 2, ชิ้นงาน):"); 
+    if(!name || !name.trim()) return;
+    
+    let max = prompt("คะแนนเต็ม (ตัวเลข เช่น 10, 20):"); 
+    if(!max || !max.trim()) return;
+    
+    let fullHeader = `${name.trim()} (${max.trim()})`;
+    showLoader(true, "กำลังเพิ่มช่องคะแนนใหม่...");
+    
+    google.script.run
+      .withSuccessHandler(() => {
+        fetchData();
+      })
+      .withFailureHandler(err => {
+        showLoader(false);
+        alert("เกิดข้อผิดพลาดในการเพิ่มช่องคะแนน: " + err);
+      })
+      .addHeader(cls, fullHeader);
+  }
+</script>
+
+</body>
+</html>
