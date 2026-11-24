@@ -163,6 +163,21 @@ function addStudent(className, no, name) {
   return "Success";
 }
 
+// เพิ่มรายชื่อนักเรียนทีละหลายคนพร้อมกัน (Bulk Import)
+function addMultipleStudents(className, studentList) {
+  var sheet = getOrCreateStudentsSheet();
+  var cls = String(className).trim();
+  
+  if (Array.isArray(studentList)) {
+    studentList.forEach(function(s) {
+      if (s.name && String(s.name).trim()) {
+        sheet.appendRow([Number(s.no), String(s.name).trim(), cls]);
+      }
+    });
+  }
+  return "Success";
+}
+
 // ============================================================
 // 2. ระบบจัดการผู้ใช้ (ชีต Users)
 // ============================================================

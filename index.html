@@ -27,18 +27,19 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
   <style>
-    /* --- 🎨 Theme Setup --- */
+    /* --- 🎨 Theme Setup & Mobile Portrait First --- */
     :root {
       --primary: #6c5ce7;
+      --primary-dark: #5644d8;
       --secondary: #a29bfe;
-      --glass-bg: rgba(255, 255, 255, 0.6);
-      --glass-border: rgba(255, 255, 255, 0.88);
+      --glass-bg: rgba(255, 255, 255, 0.72);
+      --glass-border: rgba(255, 255, 255, 0.9);
       --text-color: #2d3436;
       --input-bg: #ffffff;
       --success: #00b894;
       --warning: #fdcb6e;
       --danger: #ff7675;
-      --card-shadow: 0 20px 50px rgba(108, 92, 231, 0.16);
+      --card-shadow: 0 16px 40px rgba(108, 92, 231, 0.14);
     }
     
     * { 
@@ -53,12 +54,12 @@
       background-image: linear-gradient(120deg, #a1c4fd 0%, #c2e9fb 100%);
       background-size: 200% 200%;
       animation: gradientAnim 15s ease infinite;
-      height: 100dvh;
+      min-height: 100dvh;
       width: 100vw;
-      display: flex; justify-content: center; align-items: center;
-      overflow: hidden;
+      display: flex; justify-content: center; align-items: flex-start;
       color: var(--text-color);
       touch-action: manipulation;
+      overflow-x: hidden;
     }
 
     @keyframes gradientAnim {
@@ -67,321 +68,284 @@
       100% { background-position: 0% 50%; }
     }
 
+    /* กล่องแอปพลิเคชันหลัก (ปรับให้โปร่ง โล่ง สบายตา ตัวหนังสือไม่เบียด) */
     .app-card {
       background: var(--glass-bg);
-      backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px);
-      border: 2px solid var(--glass-border);
-      border-radius: 40px;
+      backdrop-filter: blur(28px); -webkit-backdrop-filter: blur(28px);
+      border: 1.5px solid var(--glass-border);
+      border-radius: 30px;
       box-shadow: var(--card-shadow);
-      width: 92%; max-width: 440px; height: 96vh;
-      max-height: 860px;
-      padding: 22px;
+      width: 95%; max-width: 440px;
+      min-height: 94dvh;
+      margin: 12px auto;
+      padding: 16px 14px;
       display: flex; flex-direction: column;
       position: relative;
     }
 
-    /* --- Responsive Header Bar (Single-line on mobile vertical per Rule 3) --- */
-    .header { 
-      text-align: center; 
-      margin-bottom: 12px; 
-      position: relative;
+    /* ============================================================
+       แถบหัวเรื่อง (Header) ออกแบบ 2 ชั้น ไม่ซ้อนทับกันเด็ดขาด
+       ============================================================ */
+    .header-section {
+      display: flex; flex-direction: column;
+      gap: 8px; margin-bottom: 12px;
     }
 
-    .header-bar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 8px;
-      background: rgba(255, 255, 255, 0.72);
-      border: 1.5px solid rgba(255, 255, 255, 0.95);
-      padding: 8px 12px;
-      border-radius: 22px;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+    /* ชั้นที่ 1: แถบแบรนด์และปุ่มคำสั่งหลัก */
+    .top-action-bar {
+      display: flex; align-items: center; justify-content: space-between;
+      background: rgba(255, 255, 255, 0.78);
+      border: 1px solid rgba(255, 255, 255, 0.95);
+      padding: 6px 12px; border-radius: 20px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
     }
-
-    .header-brand {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      min-width: 0;
-      flex: 1;
+    .brand-group {
+      display: flex; align-items: center; gap: 8px;
     }
-
-    .header-logo {
-      width: 38px;
-      height: 38px;
-      border-radius: 12px;
-      object-fit: cover;
-      flex-shrink: 0;
-      box-shadow: 0 2px 8px rgba(108, 92, 231, 0.25);
+    .app-icon {
+      width: 32px; height: 32px; border-radius: 9px;
+      box-shadow: 0 2px 6px rgba(108, 92, 231, 0.2);
     }
-
-    .header-text {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-      min-width: 0;
-      flex: 1;
+    .app-name-text {
+      font-weight: 700; font-size: 15px; color: var(--primary);
     }
-
-    h2 { 
-      font-family: 'Mali', cursive;
-      margin: 0; 
-      font-weight: 700; 
-      font-size: 16.5px; 
-      color: var(--primary); 
-      letter-spacing: 0.3px;
-      line-height: 1.25;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      width: 100%;
-    }
-
-    .teacher-badge-container {
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      margin-top: 2px;
-      white-space: nowrap;
-    }
-
-    .teacher-badge {
-      font-size: 12px; 
-      font-weight: 600;
-      color: var(--primary);
-      background: rgba(108, 92, 231, 0.12);
-      padding: 1px 8px;
-      border-radius: 12px;
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      white-space: nowrap;
-    }
-
-    .role-pill {
-      font-size: 10.5px;
-      font-weight: 700;
-      padding: 1px 7px;
-      border-radius: 10px;
-      text-transform: uppercase;
-      letter-spacing: 0.3px;
-      color: white;
+    .role-tag {
+      font-size: 10px; font-weight: 700; padding: 2px 7px;
+      border-radius: 10px; color: white; text-transform: uppercase;
     }
     .role-admin { background: linear-gradient(135deg, #e056fd, #6c5ce7); }
     .role-user { background: linear-gradient(135deg, #0984e3, #74b9ff); }
 
-    .header-actions {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      flex-shrink: 0;
+    .top-tools {
+      display: flex; align-items: center; gap: 6px;
+    }
+    .tool-icon-btn {
+      width: 32px; height: 32px; border-radius: 50%; border: none;
+      background: white; color: var(--primary); font-size: 13px;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.06); transition: 0.15s;
+    }
+    .tool-icon-btn:active { transform: scale(0.9); }
+    .tool-icon-btn.btn-admin { color: #e056fd; }
+
+    /* ชั้นที่ 2: การ์ดบอกวิชาและครูผู้สอน (ตัวหนังสือชัดเจน ไม่ทับซ้อน) */
+    .subject-info-card {
+      background: rgba(255, 255, 255, 0.65);
+      border: 1px solid rgba(255, 255, 255, 0.9);
+      padding: 8px 14px; border-radius: 18px;
+      display: flex; justify-content: space-between; align-items: center;
+      gap: 8px;
+    }
+    .subject-title-text {
+      font-size: 15.5px; font-weight: 700; color: var(--primary);
+      margin: 0; line-height: 1.4;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .teacher-pill {
+      font-size: 12px; font-weight: 600; color: var(--primary-dark);
+      background: rgba(108, 92, 231, 0.12);
+      padding: 2px 8px; border-radius: 10px;
+      white-space: nowrap; flex-shrink: 0;
     }
 
-    .header-btn {
-      width: 34px;
-      height: 34px;
-      border-radius: 50%;
-      border: none;
-      background: #ffffff;
-      color: var(--primary);
-      font-size: 13.5px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-      transition: transform 0.15s, background-color 0.15s;
+    /* ============================================================
+       แถบเลือกชั้นเรียน & ปุ่ม "เพิ่มนักเรียน" เด่นชัด
+       ============================================================ */
+    .class-action-bar {
+      display: flex; gap: 8px; align-items: center; margin-bottom: 10px;
     }
-    .header-btn:active { transform: scale(0.9); background: #f0f3ff; }
-    .header-btn.btn-admin { color: #e056fd; }
-
-    select, option { font-family: 'Mali', cursive !important; }
-
     select#classSelect {
-      width: 100%; height: 48px; padding: 0 16px;
-      line-height: 48px; font-size: 15.5px; 
-      border: 1.5px solid rgba(255, 255, 255, 0.9); 
-      border-radius: 18px;
-      background: var(--input-bg);
-      font-weight: 700; color: #444;
-      outline: none; text-align: left; text-align-last: left;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-      appearance: none; margin-bottom: 10px;
-      cursor: pointer;
+      flex: 1; height: 46px; padding: 0 14px;
+      font-family: 'Mali', cursive !important;
+      font-size: 15px; font-weight: 700; color: #333;
+      border: 1.5px solid rgba(255, 255, 255, 0.95);
+      border-radius: 16px; background: white;
+      outline: none; box-shadow: 0 3px 10px rgba(0,0,0,0.04);
+      appearance: none; cursor: pointer;
       background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236c5ce7' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-      background-repeat: no-repeat;
-      background-position: right 16px center;
-      background-size: 16px;
+      background-repeat: no-repeat; background-position: right 14px center; background-size: 14px;
     }
-
-    /* --- Navigator --- */
-    .nav-bar {
-      display: flex; align-items: center; gap: 8px;
-      background: rgba(255,255,255,0.52); padding: 5px; border-radius: 22px;
-      margin-bottom: 10px; height: 76px; 
-      border: 1px solid rgba(255, 255, 255, 0.75);
+    .btn-quick-student {
+      height: 46px; padding: 0 14px; border: none; border-radius: 16px;
+      background: linear-gradient(135deg, #6c5ce7, #8c7ae6);
+      color: white; font-family: 'Mali', cursive; font-size: 13.5px; font-weight: 700;
+      display: flex; align-items: center; gap: 6px; cursor: pointer;
+      box-shadow: 0 4px 12px rgba(108, 92, 231, 0.25); white-space: nowrap; flex-shrink: 0;
+      transition: transform 0.15s;
     }
+    .btn-quick-student:active { transform: scale(0.96); }
 
-    .nav-btn {
+    /* ============================================================
+       แถบเลื่อนนักเรียน (Navigator) - จัดระยะห่างไม่ทับซ้อนเด็ดขาด
+       ============================================================ */
+    .student-navigator-box {
+      background: rgba(255, 255, 255, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.85);
+      border-radius: 20px; padding: 6px 8px;
+      display: flex; align-items: center; gap: 6px;
+      margin-bottom: 10px; position: relative;
+    }
+    .nav-arrow-btn {
       width: 42px; height: 42px; border-radius: 50%; border: none;
-      background: white; color: var(--primary); font-size: 17px;
-      cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-      transition: 0.2s; flex-shrink: 0; 
+      background: white; color: var(--primary); font-size: 16px;
+      cursor: pointer; box-shadow: 0 3px 8px rgba(0,0,0,0.06);
       display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; transition: transform 0.15s;
     }
-    .nav-btn:active { transform: scale(0.9); }
-    
-    .student-wrapper {
-      flex-grow: 1; position: relative; height: 100%;
-      display: flex; align-items: center; justify-content: center;
-      overflow: hidden; 
+    .nav-arrow-btn:active { transform: scale(0.9); }
+
+    .student-center-info {
+      flex: 1; text-align: center; position: relative;
+      display: flex; flex-direction: column; align-items: center;
+      padding: 4px 2px;
     }
-
-    #studentNameDisplay {
-      width: 100%; text-align: center;
-      display: flex; flex-direction: column; justify-content: center;
-      align-items: center; line-height: 1.2;
+    .student-no-pill {
+      font-size: 11.5px; font-weight: 700; color: var(--primary);
+      background: rgba(108, 92, 231, 0.12);
+      padding: 1px 9px; border-radius: 10px;
+      margin-bottom: 3px; display: inline-block;
     }
-
-    .name-line-1 { font-family: 'Mali', cursive; font-weight: 700; font-size: 18.5px; color: #2d3436; white-space: nowrap; }
-    .name-line-2 { font-family: 'Mali', cursive; font-weight: 700; font-size: 18.5px; color: #2d3436; white-space: nowrap; margin-top: 3px; }
-
+    .student-fullname-text {
+      font-size: 17px; font-weight: 700; color: #2d3436;
+      line-height: 1.35; margin: 0; padding: 0 4px;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      max-width: 220px;
+    }
+    .student-tap-hint {
+      font-size: 11px; color: #888; margin-top: 2px;
+    }
     #studentNav {
-      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      position: absolute; inset: 0; width: 100%; height: 100%;
       opacity: 0; cursor: pointer;
     }
 
-    /* --- Total Score --- */
-    .total-container {
+    /* ============================================================
+       คะแนนรวมสะสม (Total Score Banner)
+       ============================================================ */
+    .total-banner {
       display: flex; justify-content: space-between; align-items: center;
-      padding: 6px 14px; margin-bottom: 8px; color: #555;
-      background: rgba(255, 255, 255, 0.45);
-      border-radius: 16px;
+      padding: 7px 14px; margin-bottom: 10px;
+      background: rgba(255, 255, 255, 0.5);
+      border-radius: 16px; border: 1px solid rgba(255, 255, 255, 0.8);
     }
-    .total-label { font-family: 'Mali', cursive; font-size: 14.5px; font-weight: 700; }
-    .total-value { font-family: 'Mali', cursive; font-size: 22px; font-weight: 700; color: var(--primary); }
-    .total-max { font-size: 14px; opacity: 0.65; }
-
-    /* --- Score List --- */
-    .score-list { 
-      flex-grow: 1; 
-      overflow-y: auto; 
-      padding-right: 4px; 
-      scrollbar-width: thin;
-      -webkit-overflow-scrolling: touch;
-    }
-    
-    .score-item {
-      display: flex; justify-content: space-between; align-items: center;
-      background: rgba(255,255,255,0.72); margin-bottom: 8px; padding: 10px 14px;
-      border-radius: 18px; transition: 0.2s;
-      border: 1px solid rgba(255, 255, 255, 0.85);
-    }
-    .score-item:focus-within { background: white; transform: scale(1.015); box-shadow: 0 5px 15px rgba(108, 92, 231, 0.1); }
-
-    .score-label { font-size: 15px; font-weight: 600; color: #444; flex: 1; padding-right: 10px; }
-    
-    .score-input {
-      width: 68px; height: 42px; text-align: center; font-size: 20px;
-      border: 1.5px solid transparent; border-radius: 13px; 
-      background: white; color: var(--primary); font-weight: 700; outline: none;
-      font-family: 'Mali', cursive; box-shadow: inset 0 2px 5px rgba(0,0,0,0.04);
-      transition: all 0.2s;
-    }
-
-    .score-input:focus { 
-      background: #f4f6ff; 
-      border-color: var(--primary);
-      box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.2); 
-    }
-    .score-input.low-score { color: #ff6b6b; background: #fff0f0; }
-
-    /* --- Action Buttons Grid --- */
-    .action-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-      margin-top: 8px;
-    }
-
-    .btn-secondary-action {
-      padding: 10px; border: none;
-      border-radius: 16px; background: rgba(255, 255, 255, 0.88);
-      color: var(--primary); font-family: 'Mali', cursive; font-weight: 700; 
-      cursor: pointer; font-size: 14px; box-shadow: 0 4px 12px rgba(108, 92, 231, 0.12);
-      display: flex; align-items: center; justify-content: center; gap: 6px;
-      transition: transform 0.15s, background-color 0.15s;
-    }
-    .btn-secondary-action:active { transform: scale(0.96); background: white; }
+    .total-banner-label { font-size: 14px; font-weight: 700; color: #444; }
+    .total-score-val { font-size: 20px; font-weight: 700; color: var(--primary); }
+    .total-max-val { font-size: 13.5px; color: #777; }
 
     /* ============================================================
-       🧸 CUTE LOADING POPUP (ข้อ 2: ป๊อปอัพโหลดน่ารักๆ อัตโนมัติ)
+       รายการช่องคะแนน (Score Items List)
        ============================================================ */
+    .score-list-area {
+      flex: 1; overflow-y: auto; padding-right: 4px;
+      scrollbar-width: thin; -webkit-overflow-scrolling: touch;
+      margin-bottom: 10px; min-height: 150px;
+    }
+    .score-card-item {
+      display: flex; justify-content: space-between; align-items: center;
+      background: rgba(255, 255, 255, 0.8);
+      margin-bottom: 8px; padding: 10px 14px;
+      border-radius: 16px; border: 1px solid rgba(255, 255, 255, 0.9);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+      transition: all 0.15s;
+    }
+    .score-card-item:focus-within {
+      background: white; border-color: var(--primary);
+      box-shadow: 0 4px 14px rgba(108, 92, 231, 0.12);
+    }
+    .score-topic-title {
+      font-size: 14.5px; font-weight: 600; color: #333;
+      flex: 1; padding-right: 12px; line-height: 1.45; word-break: break-word;
+    }
+    .score-number-input {
+      width: 66px; height: 42px; text-align: center; font-size: 20px;
+      border: 1.5px solid transparent; border-radius: 12px;
+      background: #f7f9fc; color: var(--primary); font-weight: 700;
+      outline: none; font-family: 'Mali', cursive;
+      transition: all 0.2s;
+    }
+    .score-number-input:focus {
+      background: white; border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.2);
+    }
+    .score-number-input.low-score {
+      color: #ff6b6b; background: #fff5f5; border-color: #ffc9c9;
+    }
+
+    /* ปุ่มเพิ่มช่องคะแนนด้านล่าง */
+    .btn-add-column {
+      width: 100%; padding: 11px; border: none; border-radius: 18px;
+      background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+      color: white; font-family: 'Mali', cursive; font-size: 14.5px; font-weight: 700;
+      cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
+      box-shadow: 0 6px 18px rgba(108, 92, 231, 0.25);
+      transition: transform 0.15s;
+    }
+    .btn-add-column:active { transform: scale(0.98); }
+
+    /* ============================================================
+       🧸 CUTE POPUP & NON-BLOCKING CUTE SAVE TOAST
+       ============================================================ */
+    /* ป๊อปอัพเซฟแบบลอยด้านบน ไม่บังช่องกรอก */
+    #cuteSaveToast {
+      position: absolute; top: 12px; left: 50%;
+      transform: translateX(-50%) translateY(-40px);
+      background: rgba(45, 52, 54, 0.95);
+      color: #ffffff; padding: 6px 16px; border-radius: 20px;
+      font-size: 12.5px; font-weight: 600; z-index: 9999;
+      opacity: 0; pointer-events: none;
+      transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.18);
+      white-space: nowrap; display: flex; align-items: center; gap: 6px;
+    }
+    #cuteSaveToast.visible {
+      transform: translateX(-50%) translateY(0); opacity: 1;
+    }
+
+    /* ป๊อปอัพโหลดน่ารักๆ สำหรับการทำงานใหญ่ (เช่น เพิ่มนักเรียน, สลับห้อง) */
     .cute-popup-overlay {
       position: fixed; inset: 0; z-index: 10000;
-      background: rgba(108, 92, 231, 0.18);
-      backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+      background: rgba(108, 92, 231, 0.16);
+      backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
       display: none; align-items: center; justify-content: center;
-      padding: 16px;
-      animation: cuteFadeIn 0.2s ease;
+      padding: 16px; animation: cuteFadeIn 0.2s ease;
     }
-    @keyframes cuteFadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
-    }
+    @keyframes cuteFadeIn { from { opacity: 0; } to { opacity: 1; } }
     .cute-popup-card {
-      background: rgba(255, 255, 255, 0.95);
-      border: 2.5px solid rgba(255, 255, 255, 0.98);
-      border-radius: 32px;
+      background: rgba(255, 255, 255, 0.96);
+      border: 2px solid rgba(255, 255, 255, 0.98);
+      border-radius: 28px;
       box-shadow: 0 20px 45px rgba(108, 92, 231, 0.22);
-      padding: 24px 26px;
-      width: 90%; max-width: 295px;
-      text-align: center;
-      position: relative;
-      animation: cuteBounceIn 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      padding: 22px 24px; width: 90%; max-width: 280px; text-align: center;
+      animation: cuteBounceIn 0.32s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
     @keyframes cuteBounceIn {
-      from { opacity: 0; transform: scale(0.8) translateY(20px); }
+      from { opacity: 0; transform: scale(0.85) translateY(15px); }
       to { opacity: 1; transform: scale(1) translateY(0); }
     }
     .cute-mascot-box {
-      width: 72px; height: 72px;
-      margin: 0 auto 12px;
+      width: 64px; height: 64px; margin: 0 auto 10px;
       background: linear-gradient(135deg, #ede9fe 0%, #e0e7ff 100%);
-      border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 34px;
-      position: relative;
-      box-shadow: 0 8px 20px rgba(108, 92, 231, 0.15);
+      border-radius: 50%; display: flex; align-items: center; justify-content: center;
+      font-size: 30px; position: relative;
       animation: mascotFloat 1.8s ease-in-out infinite alternate;
     }
     @keyframes mascotFloat {
       0% { transform: translateY(0) rotate(-4deg); }
-      100% { transform: translateY(-7px) rotate(4deg); }
+      100% { transform: translateY(-6px) rotate(4deg); }
     }
-    .sparkle-icon {
-      position: absolute; font-size: 15px;
-      animation: sparkleTwinkle 1.4s infinite alternate;
-    }
-    .sp-1 { top: -4px; right: -4px; animation-delay: 0.1s; }
-    .sp-2 { bottom: -2px; left: -2px; animation-delay: 0.5s; }
-    .sp-3 { top: 12px; left: -8px; animation-delay: 0.9s; }
+    .sparkle-icon { position: absolute; font-size: 14px; animation: sparkleTwinkle 1.4s infinite alternate; }
+    .sp-1 { top: -3px; right: -3px; }
+    .sp-2 { bottom: -2px; left: -2px; }
     @keyframes sparkleTwinkle {
-      0% { transform: scale(0.6) rotate(0deg); opacity: 0.4; }
+      0% { transform: scale(0.6); opacity: 0.4; }
       100% { transform: scale(1.2) rotate(35deg); opacity: 1; }
     }
     .cute-popup-title {
-      font-family: 'Mali', cursive;
-      font-size: 16px; font-weight: 700;
-      color: var(--primary);
-      margin-bottom: 4px;
+      font-family: 'Mali', cursive; font-size: 15.5px; font-weight: 700;
+      color: var(--primary); margin-bottom: 3px;
     }
     .cute-popup-sub {
-      font-family: 'Mali', cursive;
-      font-size: 13px;
-      color: #636e72;
-      line-height: 1.35;
+      font-family: 'Mali', cursive; font-size: 12.5px; color: #636e72; line-height: 1.35;
     }
 
     /* ============================================================
@@ -395,113 +359,114 @@
       padding: 16px;
     }
     .pin-card {
-      background: rgba(255, 255, 255, 0.75);
-      border: 2px solid rgba(255, 255, 255, 0.9);
-      border-radius: 36px;
-      box-shadow: 0 20px 45px rgba(108, 92, 231, 0.18);
-      backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-      padding: 24px 20px;
-      width: 100%; max-width: 320px;
-      text-align: center;
-      transition: transform 0.2s;
+      background: rgba(255, 255, 255, 0.8);
+      border: 2px solid rgba(255, 255, 255, 0.95);
+      border-radius: 34px; box-shadow: 0 20px 45px rgba(108, 92, 231, 0.18);
+      padding: 24px 20px; width: 100%; max-width: 310px; text-align: center;
     }
-    .pin-logo {
-      width: 60px; height: 60px;
-      border-radius: 16px;
-      margin-bottom: 8px;
-      box-shadow: 0 4px 15px rgba(108, 92, 231, 0.25);
-    }
-    .pin-title { margin: 0; font-size: 20px; font-weight: 700; color: var(--primary); }
-    .pin-desc { margin: 2px 0 6px; font-size: 13px; color: #636e72; }
-    .pin-prompt { margin: 0 0 14px 0; color: var(--primary); font-size: 13.5px; font-weight: 600; min-height: 20px; }
-    .pin-dots-container { display: flex; justify-content: center; gap: 15px; margin-bottom: 18px; }
+    .pin-logo { width: 56px; height: 56px; border-radius: 14px; margin-bottom: 6px; }
+    .pin-title { margin: 0; font-size: 19px; font-weight: 700; color: var(--primary); }
+    .pin-desc { margin: 2px 0 6px; font-size: 12.5px; color: #636e72; }
+    .pin-prompt { margin: 0 0 12px 0; color: var(--primary); font-size: 13px; font-weight: 600; min-height: 18px; }
+    .pin-dots-container { display: flex; justify-content: center; gap: 14px; margin-bottom: 16px; }
     .pin-dot {
-      width: 15px; height: 15px; border-radius: 50%;
-      border: 2px solid var(--primary); background: transparent;
-      transition: all 0.18s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      width: 14px; height: 14px; border-radius: 50%;
+      border: 2px solid var(--primary); background: transparent; transition: all 0.15s;
     }
-    .pin-dot.filled {
-      background: var(--primary); transform: scale(1.18);
-      box-shadow: 0 0 10px rgba(108, 92, 231, 0.5);
-    }
+    .pin-dot.filled { background: var(--primary); transform: scale(1.15); box-shadow: 0 0 8px rgba(108,92,231,0.5); }
     .pin-keypad {
-      display: grid; grid-template-columns: repeat(3, 1fr);
-      gap: 10px; max-width: 240px; margin: 0 auto;
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; max-width: 230px; margin: 0 auto;
     }
     .pin-key {
-      aspect-ratio: 1; border-radius: 50%;
-      border: 1.5px solid rgba(255, 255, 255, 0.9);
-      background: rgba(255, 255, 255, 0.85); color: var(--text-color);
-      font-size: 21px; font-weight: 700; cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.05);
-      transition: transform 0.12s, background-color 0.12s;
-      font-family: 'Mali', cursive;
+      aspect-ratio: 1; border-radius: 50%; border: 1.5px solid rgba(255, 255, 255, 0.9);
+      background: white; color: var(--text-color); font-size: 20px; font-weight: 700;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.05); font-family: 'Mali', cursive;
     }
     .pin-key:active { transform: scale(0.92); background: var(--primary); color: white; }
-    .pin-key.pin-tool { font-size: 16px; background: rgba(255, 255, 255, 0.5); color: var(--primary); }
+    .pin-key.pin-tool { font-size: 15px; background: rgba(255, 255, 255, 0.6); color: var(--primary); }
 
     @keyframes shakeAnimation {
       0%, 100% { transform: translateX(0); }
-      20%, 60% { transform: translateX(-9px); }
-      40%, 80% { transform: translateX(9px); }
+      20%, 60% { transform: translateX(-8px); }
+      40%, 80% { transform: translateX(8px); }
     }
     .shake-error { animation: shakeAnimation 0.35s ease-in-out; }
 
     /* ============================================================
-       MODAL DIALOGS (User Management & Add Student)
+       MODAL DIALOGS (Add Student & User Management)
        ============================================================ */
     .modal-overlay {
       position: fixed; inset: 0; z-index: 9000;
       background: rgba(0, 0, 0, 0.45);
-      backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-      display: none; align-items: center; justify-content: center;
-      padding: 16px;
+      backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+      display: none; align-items: center; justify-content: center; padding: 14px;
     }
     .modal-card {
-      background: #ffffff; border-radius: 28px;
-      width: 100%; max-width: 420px; max-height: 85vh;
+      background: #ffffff; border-radius: 26px;
+      width: 100%; max-width: 420px; max-height: 88vh;
       display: flex; flex-direction: column;
       box-shadow: 0 25px 60px rgba(0, 0, 0, 0.2);
-      overflow: hidden; animation: modalFadeIn 0.25s ease;
+      overflow: hidden; animation: modalFadeIn 0.2s ease;
     }
     @keyframes modalFadeIn {
-      from { opacity: 0; transform: scale(0.95); }
+      from { opacity: 0; transform: scale(0.96); }
       to { opacity: 1; transform: scale(1); }
     }
     .modal-header {
-      padding: 18px 20px; background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+      padding: 16px 18px; background: linear-gradient(135deg, #6c5ce7, #a29bfe);
       color: white; display: flex; justify-content: space-between; align-items: center;
     }
-    .modal-header h3 { margin: 0; font-size: 17px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+    .modal-header h3 { margin: 0; font-size: 16px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
     .modal-close-btn {
       background: rgba(255,255,255,0.2); border: none; color: white;
-      width: 30px; height: 30px; border-radius: 50%; cursor: pointer;
+      width: 28px; height: 28px; border-radius: 50%; cursor: pointer;
       display: flex; align-items: center; justify-content: center; font-size: 14px;
     }
-    .modal-body { padding: 18px 20px; overflow-y: auto; flex: 1; }
+    .modal-body { padding: 16px 18px; overflow-y: auto; flex: 1; }
     .modal-footer {
-      padding: 14px 20px; background: #f8f9fa; border-top: 1px solid #eee;
-      display: flex; justify-content: flex-end; gap: 10px;
+      padding: 12px 18px; background: #f8f9fa; border-top: 1px solid #eee;
+      display: flex; justify-content: flex-end; gap: 8px;
     }
 
-    .form-group { margin-bottom: 14px; }
-    .form-group label { display: block; font-size: 13.5px; font-weight: 600; color: #444; margin-bottom: 5px; }
+    /* สไตล์กล่องคำแนะนำวิธีเพิ่มนักเรียน */
+    .guide-callout {
+      background: #f0f3ff; border: 1.5px dashed #a29bfe; border-radius: 14px;
+      padding: 10px 12px; margin-bottom: 12px; font-size: 12.5px; line-height: 1.45; color: #444;
+    }
+    .guide-callout strong { color: var(--primary); }
+
+    /* แท็บสลับวิธีเพิ่มนักเรียน */
+    .tab-switch-row {
+      display: flex; gap: 6px; margin-bottom: 12px; background: #edf2f7;
+      padding: 4px; border-radius: 14px;
+    }
+    .tab-btn {
+      flex: 1; padding: 7px; border: none; border-radius: 10px;
+      font-family: 'Mali', cursive; font-size: 13px; font-weight: 700;
+      background: transparent; color: #666; cursor: pointer; transition: 0.15s;
+    }
+    .tab-btn.active {
+      background: white; color: var(--primary); box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+    }
+
+    .form-group { margin-bottom: 12px; }
+    .form-group label { display: block; font-size: 13px; font-weight: 600; color: #444; margin-bottom: 4px; }
     .form-control {
-      width: 100%; padding: 10px 14px; border-radius: 14px;
+      width: 100%; padding: 9px 12px; border-radius: 12px;
       border: 1.5px solid #e2e8f0; font-family: 'Mali', cursive;
-      font-size: 14.5px; outline: none; transition: border-color 0.2s;
+      font-size: 14px; outline: none; transition: border-color 0.2s;
     }
     .form-control:focus { border-color: var(--primary); }
+    textarea.form-control { min-height: 110px; resize: vertical; line-height: 1.45; }
 
     .user-list-item {
       display: flex; align-items: center; justify-content: space-between;
-      padding: 10px 12px; background: #f8faff; border-radius: 14px;
-      margin-bottom: 8px; border: 1px solid #edf2f7;
+      padding: 9px 12px; background: #f8faff; border-radius: 12px;
+      margin-bottom: 6px; border: 1px solid #edf2f7;
     }
-    .user-info-text { flex: 1; min-width: 0; }
-    .user-info-name { font-weight: 700; font-size: 14px; color: #2d3436; }
-    .user-info-sub { font-size: 12px; color: #636e72; }
+    .user-info-name { font-weight: 700; font-size: 13.5px; color: #2d3436; }
+    .user-info-sub { font-size: 11.5px; color: #636e72; }
 
     /* ============================================================
        PRINT REPORT STYLING (100% Sarabun Font per Rule 4)
@@ -521,61 +486,28 @@
       }
       .no-print { display: none !important; }
     }
-
-    .report-table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 13px; }
+    .report-table { width: 100%; border-collapse: collapse; margin-top: 14px; font-size: 13px; }
     .report-table th, .report-table td { border: 1px solid #333; padding: 6px 8px; text-align: center; }
     .report-table th { background-color: #f2f2f2 !important; font-weight: 600; }
     .report-table td.text-left { text-align: left; }
-
-    /* --- Responsive Queries for Mobile Portrait Optimization --- */
-    @media only screen and (max-width: 480px) {
-      .app-card { padding: 14px; width: 96%; height: 98dvh; border-radius: 28px; }
-      .header-bar { padding: 6px 10px; border-radius: 18px; gap: 6px; }
-      .header-logo { width: 32px; height: 32px; border-radius: 8px; }
-      h2 { font-size: 14px; white-space: nowrap; }
-      .teacher-badge { font-size: 11px; padding: 1px 6px; white-space: nowrap; }
-      .role-pill { font-size: 9.5px; padding: 1px 5px; }
-      .header-btn { width: 30px; height: 30px; font-size: 12px; }
-
-      select#classSelect { 
-        font-size: 14px; height: 44px; line-height: 44px; 
-        padding: 0 12px; margin-bottom: 8px; border-radius: 15px;
-      }
-      .name-line-1, .name-line-2 { font-size: 17px; }
-      .nav-bar { height: 68px; margin-bottom: 8px; }
-      .nav-btn { width: 38px; height: 38px; font-size: 15px; }
-      .total-container { padding: 4px 10px; margin-bottom: 6px; }
-      .total-label { font-size: 13px; }
-      .total-value { font-size: 19px; }
-      .score-item { padding: 8px 12px; margin-bottom: 7px; border-radius: 14px; }
-      .score-label { font-size: 14px; }
-      .score-input { width: 62px; height: 38px; font-size: 18px; border-radius: 11px; }
-      
-      .action-grid { gap: 6px; margin-top: 6px; }
-      .btn-secondary-action { padding: 9px; font-size: 13px; border-radius: 14px; }
-      
-      .pin-card { padding: 20px 16px; max-width: 300px; border-radius: 28px; }
-      .pin-logo { width: 50px; height: 50px; }
-      .pin-title { font-size: 18.5px; }
-      .pin-key { font-size: 19px; }
-    }
   </style>
 </head>
 <body>
 
 <!-- ============================================================
-     🧸 CUTE LOADING POPUP (ข้อ 2: ป๊อปอัพโหลดน่ารักๆ อัตโนมัติ)
+     🧸 CUTE POPUP & NON-BLOCKING CUTE SAVE TOAST
      ============================================================ -->
+<div id="cuteSaveToast">✨ บันทึกเรียบร้อยจ้า~</div>
+
 <div id="cutePopupOverlay" class="cute-popup-overlay">
   <div class="cute-popup-card">
     <div class="cute-mascot-box">
       <span id="cuteMascotIcon">✏️</span>
       <span class="sparkle-icon sp-1">✨</span>
-      <span class="sparkle-icon sp-2">⭐</span>
-      <span class="sparkle-icon sp-3">🌸</span>
+      <span class="sparkle-icon sp-2">🌸</span>
     </div>
-    <div class="cute-popup-title" id="cutePopupTitle">กำลังบันทึกคะแนน...</div>
-    <div class="cute-popup-sub" id="cutePopupSub">ระบบกำลังจัดการให้อย่างราบรื่นน้า~</div>
+    <div class="cute-popup-title" id="cutePopupTitle">กำลังบันทึกข้อมูล...</div>
+    <div class="cute-popup-sub" id="cutePopupSub">ระบบกำลังจัดการให้น้า~</div>
   </div>
 </div>
 
@@ -614,112 +546,135 @@
 </div>
 
 <!-- ============================================================
-     MAIN APP CARD
+     MAIN APP CARD (กล่องหลักสำหรับมือถือแนวตั้ง ไม่ทับซ้อน)
      ============================================================ -->
 <div class="app-card">
   
-  <!-- Responsive Header Bar (Single-line on mobile vertical - ไม่ใช้ปุ่มรีเฟรชตามข้อ 1) -->
-  <div class="header">
-    <div class="header-bar">
-      <div class="header-brand">
-        <img src="https://i.postimg.cc/bwLY28yb/gradebook.png" alt="Gradebook" class="header-logo">
-        <div class="header-text">
-          <h2 id="appSubjectTitle">คะแนนวิชาภาษาไทย</h2>
-          <div class="teacher-badge-container">
-            <span class="teacher-badge" id="teacherBadge"><i class="fas fa-chalkboard-teacher"></i> ครูบอส</span>
-            <span class="role-pill role-admin" id="rolePill">Admin</span>
-          </div>
-        </div>
+  <!-- ส่วนหัวข้อ 2 ชั้น (Header Section) -->
+  <div class="header-section">
+    <!-- ชั้น 1: แบรนด์ + ปุ่มคำสั่ง -->
+    <div class="top-action-bar">
+      <div class="brand-group">
+        <img src="https://i.postimg.cc/bwLY28yb/gradebook.png" alt="Gradebook" class="app-icon">
+        <span class="app-name-text">Gradebook</span>
+        <span class="role-tag role-admin" id="rolePill">Admin</span>
       </div>
-      
-      <div class="header-actions">
-        <!-- ปุ่มพิมพ์รายงานคะแนนห้องเรียน -->
-        <button type="button" class="header-btn" onclick="openPrintPreview()" title="พิมพ์คะแนนห้องเรียน (Sarabun)"><i class="fas fa-print"></i></button>
-        <!-- ปุ่มจัดการผู้ใช้ (เฉพาะ Admin) -->
-        <button type="button" class="header-btn btn-admin" id="adminUsersBtn" onclick="openUserManager()" title="จัดการผู้ใช้ (Admin)"><i class="fas fa-user-gear"></i></button>
-        <!-- ปุ่มล็อคหน้าจอ / สลับผู้ใช้ -->
-        <button type="button" class="header-btn" onclick="lockApp()" title="ล็อคหน้าจอ / สลับผู้ใช้"><i class="fas fa-lock"></i></button>
+      <div class="top-tools">
+        <button type="button" class="tool-icon-btn" onclick="openPrintPreview()" title="พิมพ์คะแนนห้องเรียน (Sarabun)"><i class="fas fa-print"></i></button>
+        <button type="button" class="tool-icon-btn btn-admin" id="adminUsersBtn" onclick="openUserManager()" title="จัดการผู้ใช้ (Admin)"><i class="fas fa-user-gear"></i></button>
+        <button type="button" class="tool-icon-btn" onclick="lockApp()" title="ล็อคหน้าจอ / สลับผู้ใช้"><i class="fas fa-lock"></i></button>
       </div>
     </div>
-  </div>
 
-  <!-- Class Selector (ข้อ 4: กดเลือกชั้นเรียนเพื่อบันทึกคะแนนได้ทันที) -->
-  <select id="classSelect" onchange="onClassSelectChange()">
-    <option value="" disabled selected>กำลังโหลดชั้นเรียน...</option>
-  </select>
-
-  <!-- Student Navigator -->
-  <div class="nav-bar">
-    <button type="button" class="nav-btn" onclick="nav(-1)" aria-label="นักเรียนคนก่อนหน้า"><i class="fas fa-chevron-left"></i></button>
-    
-    <div class="student-wrapper">
-      <div id="studentNameDisplay">
-        <div class="name-line-1">รอนักเรียน...</div>
-      </div>
-      
-      <select id="studentNav" onchange="jumpToStudent()" title="เลือกนักเรียน">
-        <option>รอนักเรียน...</option>
-      </select>
-    </div>
-
-    <button type="button" class="nav-btn" onclick="nav(1)" aria-label="นักเรียนคนถัดไป"><i class="fas fa-chevron-right"></i></button>
-  </div>
-
-  <!-- Accumulated Total Score -->
-  <div class="total-container">
-    <div class="total-label">คะแนนรวมสะสม</div>
-    <div>
-      <span class="total-value" id="totalDisplay">0</span>
-      <span class="total-max">/ <span id="maxTotalDisplay">0</span></span>
+    <!-- ชั้น 2: วิชาและครูผู้สอน (ข้อความอิสระ ตัวหนังสือไม่เบียด) -->
+    <div class="subject-info-card">
+      <h2 class="subject-title-text" id="appSubjectTitle">คะแนนวิชาภาษาไทย</h2>
+      <span class="teacher-pill" id="teacherBadge"><i class="fas fa-chalkboard-teacher"></i> ครูบอส</span>
     </div>
   </div>
 
-  <!-- Score Items List (ข้อ 3: เฉพาะช่องคะแนนของครูผู้ใช้นี้เท่านั้น) -->
-  <div id="scoreContainer" class="score-list">
-    <div style="text-align:center; margin-top:55px; color:rgba(0,0,0,0.35);">
-      <i class="fas fa-folder-open fa-3x"></i>
-      <br><br>
-      <span style="font-family:'Mali'">เลือกห้องเรียนเพื่อเริ่มงาน</span>
-    </div>
-  </div>
-
-  <!-- Action Buttons (Grid) -->
-  <div class="action-grid">
-    <button type="button" class="btn-secondary-action" onclick="openAddStudentModal()">
+  <!-- แถบเลือกชั้นเรียน & ปุ่มเพิ่มนักเรียนเด่นชัด (ข้อ 4) -->
+  <div class="class-action-bar">
+    <select id="classSelect" onchange="onClassSelectChange()">
+      <option value="" disabled selected>กำลังโหลดชั้นเรียน...</option>
+    </select>
+    <button type="button" class="btn-quick-student" onclick="openAddStudentModal()" title="เพิ่มรายชื่อนักเรียน">
       <i class="fas fa-user-plus"></i> เพิ่มนักเรียน
     </button>
-    <button type="button" class="btn-secondary-action" onclick="addTopic()">
-      <i class="fas fa-plus-circle"></i> เพิ่มช่องคะแนน
-    </button>
   </div>
+
+  <!-- แถบเลื่อนนักเรียน (Navigator จัดระยะห่างไม่ทับซ้อน) -->
+  <div class="student-navigator-box">
+    <button type="button" class="nav-arrow-btn" onclick="nav(-1)" aria-label="คนก่อนหน้า"><i class="fas fa-chevron-left"></i></button>
+    
+    <div class="student-center-info">
+      <span class="student-no-pill" id="studentNoPill">เลขที่ -</span>
+      <h3 class="student-fullname-text" id="studentNameText">รอนักเรียน...</h3>
+      <div class="student-tap-hint" id="studentCountHint"><i class="fas fa-caret-down"></i> แตะเพื่อเลือกเลขที่</div>
+      <select id="studentNav" onchange="jumpToStudent()" title="เลือกนักเรียน"></select>
+    </div>
+
+    <button type="button" class="nav-arrow-btn" onclick="nav(1)" aria-label="คนถัดไป"><i class="fas fa-chevron-right"></i></button>
+  </div>
+
+  <!-- คะแนนรวมสะสม (Total Score Banner) -->
+  <div class="total-banner">
+    <span class="total-banner-label">คะแนนรวมสะสม</span>
+    <div>
+      <span class="total-score-val" id="totalDisplay">0</span>
+      <span class="total-max-val">/ <span id="maxTotalDisplay">0</span> คะแนน</span>
+    </div>
+  </div>
+
+  <!-- รายการคะแนน (Score Items List - เฉพาะของครูท่านนี้ตามข้อ 3) -->
+  <div id="scoreContainer" class="score-list-area">
+    <div style="text-align:center; margin-top:40px; color:rgba(0,0,0,0.35);">
+      <i class="fas fa-folder-open fa-3x"></i><br><br>
+      <span>เลือกชั้นเรียนเพื่อเริ่มงาน</span>
+    </div>
+  </div>
+
+  <!-- ปุ่มเพิ่มช่องคะแนนด้านล่าง -->
+  <button type="button" class="btn-add-column" onclick="addTopic()">
+    <i class="fas fa-plus-circle"></i> เพิ่มช่องคะแนน
+  </button>
 </div>
 
 <!-- ============================================================
-     MODAL 1: ADD STUDENT DIALOG (ชื่อ, ชั้น, เลขที่ ตามข้อ 4)
+     MODAL 1: ADD STUDENT DIALOG (คำตอบข้อ 2: จุดเพิ่มรายชื่อนักเรียน)
      ============================================================ -->
 <div class="modal-overlay" id="addStudentModal">
   <div class="modal-card">
     <div class="modal-header">
-      <h3><i class="fas fa-user-plus"></i> เพิ่มนักเรียนใหม่</h3>
+      <h3><i class="fas fa-user-plus"></i> เพิ่มรายชื่อนักเรียน</h3>
       <button type="button" class="modal-close-btn" onclick="closeModal('addStudentModal')">&times;</button>
     </div>
     <div class="modal-body">
-      <div class="form-group">
-        <label>ชั้นเรียน</label>
-        <input type="text" class="form-control" id="modalStudentClassName" readonly style="background:#f1f2f6; font-weight:700;">
+      
+      <!-- คำแนะนำช่องทางการเพิ่มนักเรียนใน Google Sheet -->
+      <div class="guide-callout">
+        <strong>💡 สามารถเพิ่มรายชื่อนักเรียนได้ 2 ช่องทาง:</strong><br>
+        1. <strong>ในแอปนี้:</strong> เพิ่มทีละคน หรือคัดลอกรายชื่อทั้งห้องมาวางด้านล่างได้เลย<br>
+        2. <strong>ใน Google Sheet:</strong> ไปที่แท็บชีตชื่อ <strong>`Students`</strong> แล้วกรอกในคอลัมน์ [เลขที่, ชื่อ, ชั้น] ข้อมูลจะขึ้นในแอปทันที
       </div>
-      <div class="form-group">
-        <label>เลขที่</label>
-        <input type="number" class="form-control" id="newStudentNo" placeholder="ระบุเลขที่ เช่น 1, 2" min="1">
+
+      <!-- แท็บสลับวิธีเพิ่ม -->
+      <div class="tab-switch-row">
+        <button type="button" class="tab-btn active" id="tabSingleBtn" onclick="switchStudentTab('single')">➕ เพิ่มทีละคน</button>
+        <button type="button" class="tab-btn" id="tabBulkBtn" onclick="switchStudentTab('bulk')">📋 วางรายชื่อทั้งห้อง</button>
       </div>
-      <div class="form-group">
-        <label>ชื่อ - นามสกุล นักเรียน</label>
-        <input type="text" class="form-control" id="newStudentName" placeholder="เช่น ด.ช. รักดี ใฝ่เรียน">
+
+      <!-- ส่วนที่ 1: เพิ่มทีละคน -->
+      <div id="singleStudentSection">
+        <div class="form-group">
+          <label>ชั้นเรียน</label>
+          <input type="text" class="form-control" id="modalStudentClassName" readonly style="background:#f1f2f6; font-weight:700;">
+        </div>
+        <div class="form-group">
+          <label>เลขที่</label>
+          <input type="number" class="form-control" id="newStudentNo" placeholder="ระบุเลขที่ เช่น 1, 2" min="1">
+        </div>
+        <div class="form-group">
+          <label>ชื่อ - นามสกุล นักเรียน</label>
+          <input type="text" class="form-control" id="newStudentName" placeholder="เช่น ด.ช. รักดี ใฝ่เรียน">
+        </div>
       </div>
+
+      <!-- ส่วนที่ 2: วางรายชื่อทีละหลายคน (Bulk Import) -->
+      <div id="bulkStudentSection" style="display:none;">
+        <div class="form-group">
+          <label>วางรายชื่อนักเรียน (บรรทัดละ 1 คน)</label>
+          <textarea class="form-control" id="bulkStudentsText" placeholder="วางรายชื่อจาก Excel หรือเอกสาร เช่น:
+1 ด.ช. ตัวอย่าง รักเรียน
+2 ด.ญ. มานี มีตา
+(หรือพิมพ์แค่ชื่อบรรทัดละคน ระบบจะจัดเลขที่ให้อัตโนมัติ)"></textarea>
+        </div>
+      </div>
+
     </div>
     <div class="modal-footer">
-      <button type="button" class="btn-secondary-action" onclick="closeModal('addStudentModal')">ยกเลิก</button>
-      <button type="button" class="btn-secondary-action" style="background:var(--primary); color:white;" onclick="submitNewStudent()">บันทึกนักเรียน</button>
+      <button type="button" class="btn-quick-student" style="background:#eee; color:#555; box-shadow:none;" onclick="closeModal('addStudentModal')">ยกเลิก</button>
+      <button type="button" class="btn-quick-student" onclick="submitStudentForm()">บันทึกรายชื่อ</button>
     </div>
   </div>
 </div>
@@ -728,18 +683,18 @@
      MODAL 2: USER MANAGEMENT (ADMIN ONLY)
      ============================================================ -->
 <div class="modal-overlay" id="userManagerModal">
-  <div class="modal-card" style="max-width: 460px;">
+  <div class="modal-card" style="max-width: 440px;">
     <div class="modal-header">
       <h3><i class="fas fa-users-gear"></i> จัดการผู้ใช้ (Admin)</h3>
       <button type="button" class="modal-close-btn" onclick="closeModal('userManagerModal')">&times;</button>
     </div>
     <div class="modal-body">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-        <span style="font-weight:700; font-size:14px; color:#2d3436;">รายชื่อผู้ใช้ในระบบ</span>
-        <button type="button" class="btn-secondary-action" style="padding:4px 10px; font-size:12px;" onclick="showAddUserForm()">+ เพิ่มผู้ใช้ใหม่</button>
+        <span style="font-weight:700; font-size:13.5px; color:#2d3436;">รายชื่อผู้ใช้ในระบบ</span>
+        <button type="button" class="btn-quick-student" style="height:32px; padding:0 10px; font-size:12px;" onclick="showAddUserForm()">+ เพิ่มผู้ใช้</button>
       </div>
       
-      <div id="usersListContainer" style="max-height: 180px; overflow-y: auto; margin-bottom: 16px;"></div>
+      <div id="usersListContainer" style="max-height: 180px; overflow-y: auto; margin-bottom: 14px;"></div>
 
       <div id="userFormSection" style="background:#f8faff; padding:12px; border-radius:16px; border:1px solid #edf2f7; display:none;">
         <h4 id="userFormTitle" style="margin:0 0 10px 0; font-size:14px; color:var(--primary);">เพิ่มผู้ใช้ใหม่</h4>
@@ -767,14 +722,14 @@
           </select>
         </div>
         <div style="display:flex; justify-content:flex-end; gap:8px;">
-          <button type="button" class="btn-secondary-action" style="padding:6px 12px; font-size:12.5px;" onclick="hideUserForm()">ยกเลิก</button>
-          <button type="button" class="btn-secondary-action" style="padding:6px 14px; font-size:12.5px; background:var(--primary); color:white;" onclick="saveUserFromForm()">บันทึกผู้ใช้</button>
+          <button type="button" class="btn-quick-student" style="background:#eee; color:#555; height:34px; box-shadow:none;" onclick="hideUserForm()">ยกเลิก</button>
+          <button type="button" class="btn-quick-student" style="height:34px;" onclick="saveUserFromForm()">บันทึกผู้ใช้</button>
         </div>
       </div>
 
     </div>
     <div class="modal-footer">
-      <button type="button" class="btn-secondary-action" onclick="closeModal('userManagerModal')">ปิดหน้าต่าง</button>
+      <button type="button" class="btn-quick-student" style="background:#eee; color:#555; box-shadow:none;" onclick="closeModal('userManagerModal')">ปิดหน้าต่าง</button>
     </div>
   </div>
 </div>
@@ -803,13 +758,12 @@
         <th class="text-left" style="min-width: 170px;">ชื่อ - สกุล</th>
         <th style="width: 80px;">รวม</th>
         <th style="width: 70px;">ร้อยละ</th>
-        <th style="width: 80px;">ผลการประเมิน</th>
+        <th style="width: 80px;">ประเมิน</th>
       </tr>
     </thead>
     <tbody id="printReportBody"></tbody>
   </table>
 
-  <!-- Signature Block -->
   <div style="margin-top: 45px; display: flex; justify-content: space-between; page-break-inside: avoid; font-family:'Sarabun', sans-serif !important; font-size: 13.5px;">
     <div style="text-align: center; width: 45%;">
       <p style="margin-bottom: 50px;">ลงชื่อ............................................................ครูผู้สอน</p>
@@ -827,25 +781,25 @@
 <script>
   /**
    * ============================================================
-   * 1. APP STATE & MOCK STORE (สำหรับ GitHub Pages & Offline)
-   *    ข้อ 3: แยกคะแนนตาม UserID ชัดเจน
-   *    ข้อ 4: ข้อมูลนักเรียนมี เลขที่, ชื่อ, ชั้น
+   * 1. APP STATE & MOCK STORE
    * ============================================================
    */
   const GAS_URL_KEY = "gradebook_gas_url";
-  const SESSION_USER_KEY = "gradebook_active_user_v3";
+  const SESSION_USER_KEY = "gradebook_active_user_v4";
 
-  let currentUser = null; // { userId, name, subject, role }
-  let cachedData = null;  // { students: [], headers: [] }
+  let currentUser = null; 
+  let cachedData = null;  
   let classList = [];
   let currentIndex = 0;
   let lastFocusedIndex = null;
   let currentEnteredPin = "";
+  let cuteToastTimer = null;
   let cutePopupTimer = null;
   let autoSyncTimer = null;
   let autoSaveTimeout = null;
+  let activeStudentTab = 'single';
 
-  // Mock Store บน GitHub Pages (นักเรียนส่วนกลาง + แยกช่องคะแนนตาม UserID)
+  // Mock Store บน GitHub Pages
   let mockStore = {
     users: [
       { row: 2, userId: "ADM01", name: "ครูบอส", subject: "ภาษาไทย", pin: "8055", role: "admin" },
@@ -863,7 +817,7 @@
       { no: 1, name: "ด.ช. เก่งกล้า ท้าทาย", className: "ป.6/1" },
       { no: 2, name: "ด.ญ. สวยสม นิยมไทย", className: "ป.6/1" }
     ],
-    // ตารางคะแนนแยกตาม [ClassName]_[UserID] เพื่อไม่ให้แสดงเหมือนกัน
+    // ตารางคะแนนแยกตาม [ClassName]_[UserID] เพื่อความปลอดภัยและไม่ซ้ำซ้อน
     scores: {
       "ป.5/1_ADM01": {
         headers: [
@@ -901,9 +855,22 @@
 
   /**
    * ============================================================
-   * 2. 🧸 CUTE LOADING POPUP HELPER (ข้อ 2: ป๊อปอัพโหลดน่ารักๆ)
+   * 2. CUTE POPUP & AUTO-SAVE TOAST (ไม่บังช่องพิมพ์)
    * ============================================================
    */
+  // ป้ายบันทึกคะแนนลอยด้านบนเบาๆ ไม่บังช่องกรอกคะแนน
+  function showCuteSaveToast(msg = "✨ บันทึกคะแนนเรียบร้อยจ้า~") {
+    const toast = document.getElementById('cuteSaveToast');
+    if (!toast) return;
+    toast.innerText = msg;
+    toast.classList.add('visible');
+    if (cuteToastTimer) clearTimeout(cuteToastTimer);
+    cuteToastTimer = setTimeout(() => {
+      toast.classList.remove('visible');
+    }, 1200);
+  }
+
+  // ป๊อปอัพน่ารักสำหรับงานสำคัญ (เช่น สลับชั้นเรียน, เพิ่มนักเรียน)
   function showCutePopup(icon, title, desc, autoCloseMs = 0) {
     const overlay = document.getElementById('cutePopupOverlay');
     const iconEl = document.getElementById('cuteMascotIcon');
@@ -912,7 +879,7 @@
     
     if (iconEl) iconEl.innerText = icon || "✏️";
     if (titleEl) titleEl.innerText = title || "กำลังจัดการข้อมูล...";
-    if (descEl) descEl.innerText = desc || "ระบบกำลังซิงค์คะแนนให้อัตโนมัติน้า~";
+    if (descEl) descEl.innerText = desc || "ระบบกำลังซิงค์ให้อัตโนมัติน้า~";
     
     if (overlay) overlay.style.display = 'flex';
     
@@ -929,7 +896,7 @@
 
   /**
    * ============================================================
-   * 3. GAS API PROXY & BRIDGE (Dual Mode: Apps Script & GitHub Pages)
+   * 3. GAS API PROXY & BRIDGE
    * ============================================================
    */
   function handleMockCall(prop, args, successFn, failureFn) {
@@ -959,7 +926,6 @@
           mockStore.users = mockStore.users.filter(u => u.userId !== uId);
           successFn("Success");
         } else if (prop === "getAllClassNames") {
-          // ดึงรายชื่อชั้นเรียนทั้งหมดจากข้อมูลนักเรียน
           const classSet = {};
           mockStore.students.forEach(s => { if (s.className) classSet[s.className] = true; });
           const classes = Object.keys(classSet).sort();
@@ -996,9 +962,9 @@
         } else if (prop === "saveScore") {
           const [cls, uId, row, colIndex, val] = args;
           const key = cls + "_" + (uId || "ADM01");
-          if (mockStore.scores[key]) {
+          if (mockStore.scores[key] && cachedData && cachedData.students[currentIndex]) {
             const header = mockStore.scores[key].headers.find(h => h.colIndex === colIndex);
-            if (header && cachedData && cachedData.students[currentIndex]) {
+            if (header) {
               const studentNo = cachedData.students[currentIndex].no;
               if (!mockStore.scores[key].values[studentNo]) mockStore.scores[key].values[studentNo] = {};
               mockStore.scores[key].values[studentNo][header.name] = val;
@@ -1024,6 +990,18 @@
             className: cls
           });
           successFn("Success");
+        } else if (prop === "addMultipleStudents") {
+          const [cls, studentList] = args;
+          if (Array.isArray(studentList)) {
+            studentList.forEach(s => {
+              mockStore.students.push({
+                no: Number(s.no),
+                name: String(s.name).trim(),
+                className: cls
+              });
+            });
+          }
+          successFn("Success");
         } else if (prop === "createNewClass") {
           const cls = args[0];
           mockStore.students.push({ no: 1, name: "ด.ช. ตัวอย่าง รักเรียน", className: cls });
@@ -1033,7 +1011,7 @@
           failureFn(new Error("ฟังก์ชันไม่รองรับ"));
         }
       } catch(e) { failureFn(e); }
-    }, 150);
+    }, 140);
   }
 
   function createGasProxy(successFn, failureFn) {
@@ -1086,7 +1064,7 @@
    */
   window.onload = function() {
     initSession();
-    initAutoSync(); // ข้อ 1: อัปเดตข้อมูลอัตโนมัติ ไม่ต้องมีปุ่มกด
+    initAutoSync();
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('./sw.js').catch(() => {});
     }
@@ -1106,24 +1084,16 @@
     showPinOverlay();
   }
 
-  // ข้อ 1: ซิงค์ข้อมูลอัตโนมัติในเบื้องหลังเมื่อกลับเข้าสู่แท็บหรือตามระยะเวลา
   function initAutoSync() {
     window.addEventListener('focus', () => {
-      if (currentUser && document.getElementById('classSelect').value) {
-        fetchDataSilently();
-      }
+      if (currentUser && document.getElementById('classSelect').value) fetchDataSilently();
     });
     document.addEventListener('visibilitychange', () => {
-      if (!document.hidden && currentUser && document.getElementById('classSelect').value) {
-        fetchDataSilently();
-      }
+      if (!document.hidden && currentUser && document.getElementById('classSelect').value) fetchDataSilently();
     });
-    // โพลล์ตรวจสอบข้อมูลอัตโนมัติทุก 45 วินาที
     if (autoSyncTimer) clearInterval(autoSyncTimer);
     autoSyncTimer = setInterval(() => {
-      if (currentUser && document.getElementById('classSelect').value && !document.hidden) {
-        fetchDataSilently();
-      }
+      if (currentUser && document.getElementById('classSelect').value && !document.hidden) fetchDataSilently();
     }, 45000);
   }
 
@@ -1194,7 +1164,7 @@
             pinOverlay.style.opacity = '1';
           }, 250);
           
-          showCutePopup("✨", `ยินดีต้อนรับ ${currentUser.name}`, `เปิดสมุดบันทึกวิชา${currentUser.subject || 'ของครู'}แล้วจ้า`, 750);
+          showCutePopup("✨", `ยินดีต้อนรับ ${currentUser.name}`, `เปิดสมุดบันทึกวิชา${currentUser.subject || 'ของครู'}แล้วจ้า`, 700);
           refreshClassList();
         } else {
           hideCutePopup();
@@ -1244,10 +1214,10 @@
     if (roleEl) {
       if (currentUser.role === 'admin') {
         roleEl.innerText = "Admin";
-        roleEl.className = "role-pill role-admin";
+        roleEl.className = "role-tag role-admin";
       } else {
         roleEl.innerText = "ครูผู้สอน";
-        roleEl.className = "role-pill role-user";
+        roleEl.className = "role-tag role-user";
       }
     }
 
@@ -1262,8 +1232,8 @@
     const newUrl = prompt("ใส่ Google Apps Script Web App URL (ลงท้ายด้วย /exec):", currentUrl);
     if (newUrl !== null) {
       localStorage.setItem(GAS_URL_KEY, newUrl.trim());
-      showCutePopup("⚙️", "บันทึก URL เรียบร้อย", "กำลังเชื่อมต่อไปยัง Google Sheet จริง...", 800);
-      setTimeout(() => location.reload(), 800);
+      showCutePopup("⚙️", "บันทึก URL เรียบร้อย", "กำลังเชื่อมต่อไปยัง Google Sheet จริง...", 700);
+      setTimeout(() => location.reload(), 700);
     }
   }
 
@@ -1278,10 +1248,7 @@
 
   /**
    * ============================================================
-   * 5. DATA LOGIC, CLASS SELECTION & AUTOMATIC SYNC
-   *    ข้อ 1: อัปเดตข้อมูลอัตโนมัติเอง
-   *    ข้อ 3: ดึงข้อมูลคะแนนแยกตาม userId ของครู
-   *    ข้อ 4: ดึงรายชื่อห้องเรียนจากข้อมูลนักเรียนในชีต Students
+   * 5. DATA LOGIC & STUDENT SELECTION (ไม่ทับซ้อนเด็ดขาด)
    * ============================================================
    */
   function refreshClassList(selectClassName = null) {
@@ -1367,7 +1334,6 @@
       .createNewClass(className.trim());
   }
 
-  // ดึงข้อมูลคะแนนเฉพาะของ User คนนั้นในห้องเรียนนั้น (ข้อ 3)
   function fetchData(showCute = true) {
     let cls = document.getElementById('classSelect').value;
     if (!cls || cls === "__NEW_CLASS__" || !currentUser) return;
@@ -1394,7 +1360,6 @@
       .getClassData(cls, currentUser.userId);
   }
 
-  // ซิงค์อัตโนมัติในเบื้องหลังแบบเงียบๆ ไม่รบกวนการทำงาน
   function fetchDataSilently() {
     let cls = document.getElementById('classSelect').value;
     if (!cls || cls === "__NEW_CLASS__" || !currentUser) return;
@@ -1404,18 +1369,10 @@
         if (data && data.students) {
           cachedData = data;
           populateStudentDropdown();
-          // อัปเดตเฉพาะคะแนนโดยไม่รีเซ็ตโฟกัสการพิมพ์ของผู้ใช้
-          updateScoresInDOM();
+          calcTotal();
         }
       })
       .getClassData(cls, currentUser.userId);
-  }
-
-  function updateScoresInDOM() {
-    if (!cachedData || !cachedData.students || cachedData.students.length === 0) return;
-    let student = cachedData.students[currentIndex];
-    if (!student) return;
-    calcTotal();
   }
 
   function populateStudentDropdown() {
@@ -1428,7 +1385,7 @@
     cachedData.students.forEach((s, index) => {
       let opt = document.createElement('option');
       opt.value = index;
-      opt.text = `เลขที่ ${s.no}`;
+      opt.text = `เลขที่ ${s.no} - ${s.name}`;
       select.add(opt);
     });
   }
@@ -1439,13 +1396,22 @@
     renderUI();
   }
 
+  // เรนเดอร์หน้าจอนักเรียนและคะแนน (แก้ปัญหาตัวหนังสือซ้อนทับ 100%)
   function renderUI() {
+    const noPill = document.getElementById('studentNoPill');
+    const nameText = document.getElementById('studentNameText');
+    const countHint = document.getElementById('studentCountHint');
+    const scoreContainer = document.getElementById('scoreContainer');
+
     if (!cachedData || !cachedData.students || cachedData.students.length === 0) {
-      document.getElementById('studentNameDisplay').innerHTML = '<div class="name-line-1">ยังไม่มีนักเรียนในชั้นนี้</div>';
-      document.getElementById('scoreContainer').innerHTML = `
-        <div style="text-align:center; margin-top:45px; color:rgba(0,0,0,0.35);">
-          <i class="fas fa-user-plus fa-3x"></i><br><br>
-          <span style="font-family:'Mali'">กดปุ่ม "+ เพิ่มนักเรียน" ด้านล่างเพื่อเพิ่มนักเรียนคนแรก</span>
+      noPill.innerText = "ยังไม่มีข้อมูล";
+      nameText.innerText = "ยังไม่มีนักเรียนในชั้นนี้";
+      countHint.innerText = "กดปุ่ม '+ เพิ่มนักเรียน' ด้านบนเพื่อเพิ่มนักเรียน";
+      scoreContainer.innerHTML = `
+        <div style="text-align:center; margin-top:35px; color:rgba(0,0,0,0.4);">
+          <i class="fas fa-user-plus fa-3x" style="color:var(--primary); margin-bottom:10px;"></i><br>
+          <span style="font-size:15px; font-weight:700;">ยังไม่มีนักเรียนในชั้นนี้</span><br>
+          <span style="font-size:12.5px; color:#666;">แตะปุ่ม "เพิ่มนักเรียน" ด้านบน หรือวางรายชื่อใน Google Sheet ได้เลยครับ</span>
         </div>`;
       document.getElementById('totalDisplay').innerText = "0";
       document.getElementById('maxTotalDisplay').innerText = "0";
@@ -1455,15 +1421,10 @@
     let student = cachedData.students[currentIndex];
     document.getElementById('studentNav').value = currentIndex;
     
-    let fullName = student.name.trim();
-    let lastSpace = fullName.lastIndexOf(" ");
-    let first = (lastSpace !== -1) ? fullName.substring(0, lastSpace) : fullName;
-    let last = (lastSpace !== -1) ? fullName.substring(lastSpace + 1) : "";
-
-    document.getElementById('studentNameDisplay').innerHTML = `
-      <div class="name-line-1">${student.no}. ${first}</div>
-      <div class="name-line-2">${last}</div>
-    `;
+    // แสดงเลขที่ และชื่อ-นามสกุล ในบรรทัดที่ชัดเจน ไม่เบียดซ้อนทับ
+    noPill.innerText = `เลขที่ ${student.no}`;
+    nameText.innerText = student.name;
+    countHint.innerHTML = `<i class="fas fa-caret-down"></i> แตะเพื่อเลือกเลขที่ (${currentIndex + 1}/${cachedData.students.length})`;
 
     let html = '';
     cachedData.headers.forEach((h, idx) => {
@@ -1471,15 +1432,15 @@
       if (score === undefined || score === null) score = "";
       let lowClass = (score !== "" && parseFloat(score) < (h.max / 2)) ? "low-score" : "";
       html += `
-        <div class="score-item">
-          <div class="score-label">${h.name}</div>
-          <input type="tel" class="score-input ${lowClass}" 
+        <div class="score-card-item">
+          <div class="score-topic-title">${h.name}</div>
+          <input type="tel" class="score-number-input ${lowClass}" 
             id="input-${idx}" value="${score}" placeholder="-"
             onfocus="setFocus(${idx})" oninput="validate(this, ${h.max}, ${idx})"
             onkeydown="handleEnter(event, ${idx})" onchange="saveAuto(this, '${h.name}', ${h.colIndex})">
         </div>`;
     });
-    document.getElementById('scoreContainer').innerHTML = html;
+    scoreContainer.innerHTML = html;
     calcTotal();
     
     if (lastFocusedIndex !== null) {
@@ -1517,12 +1478,11 @@
     }
     calcTotal();
 
-    // บันทึกอัตโนมัติแบบ Debounced (ข้อ 1: อัปเดตอัตโนมัติ ไม่ต้องมีปุ่มกด)
     if (autoSaveTimeout) clearTimeout(autoSaveTimeout);
     autoSaveTimeout = setTimeout(() => {
       const header = cachedData.headers[idx];
-      saveAuto(el, header.name, header.colIndex, false);
-    }, 500);
+      saveAuto(el, header.name, header.colIndex);
+    }, 450);
   }
 
   function calcTotal() {
@@ -1547,28 +1507,22 @@
     }
   }
 
-  // บันทึกคะแนนอัตโนมัติแยกตาม UserID ของครู (ข้อ 1, 2, 3)
-  function saveAuto(el, headerName, colIndex, showPopup = true) {
+  function saveAuto(el, headerName, colIndex) {
     let cls = document.getElementById('classSelect').value;
     if (!cls || !cachedData || !cachedData.students || !cachedData.students[currentIndex] || !currentUser) return;
     
-    if (showPopup) {
-      showCutePopup("✏️", "กำลังบันทึกคะแนน...", "จดคะแนนวิชาของครูลงสมุดแล้วน้า~", 600);
-    }
+    showCuteSaveToast("✨ บันทึกคะแนนแล้วจ้า~");
 
     google.script.run
       .withSuccessHandler(res => {
-        if (showPopup) {
-          showCutePopup("✨", "บันทึกเรียบร้อยแล้วจ้า!", "คะแนนถูกบันทึกลง Google Sheets แล้ว", 600);
-        }
+        showCuteSaveToast("✅ บันทึกลง Google Sheets เรียบร้อย");
       })
       .withFailureHandler(err => {
-        showCutePopup("⚠️", "บันทึกไม่สำเร็จ", "กรุณาตรวจสอบการเชื่อมต่ออินเทอร์เน็ต", 900);
+        showCuteSaveToast("⚠️ บันทึกไม่สำเร็จ ลองอีกครั้ง");
       })
       .saveScore(cls, currentUser.userId, cachedData.students[currentIndex].row, colIndex, el.value);
   }
 
-  // เพิ่มช่องคะแนนเฉพาะในชีตของครูคนนี้ (ข้อ 3)
   function addTopic() {
     let cls = document.getElementById('classSelect').value;
     if (!cls || cls === "__NEW_CLASS__" || !currentUser) return alert("กรุณาเลือกชั้นเรียนก่อนครับ");
@@ -1596,7 +1550,7 @@
 
   /**
    * ============================================================
-   * 6. ADD STUDENT WORKFLOW (บันทึกลงชีต Students: ชื่อ, ชั้น, เลขที่ - ข้อ 4)
+   * 6. ADD STUDENT WORKFLOW (คำตอบข้อ 2: มีทั้งเพิ่มเดี่ยวและวางทั้งห้อง)
    * ============================================================
    */
   function openAddStudentModal() {
@@ -1611,32 +1565,95 @@
     }
     document.getElementById('newStudentNo').value = nextNo;
     document.getElementById('newStudentName').value = "";
+    document.getElementById('bulkStudentsText').value = "";
     
+    switchStudentTab('single');
     openModal('addStudentModal');
   }
 
-  function submitNewStudent() {
-    let cls = document.getElementById('classSelect').value;
-    let no = document.getElementById('newStudentNo').value;
-    let name = document.getElementById('newStudentName').value;
+  function switchStudentTab(tab) {
+    activeStudentTab = tab;
+    const singleSection = document.getElementById('singleStudentSection');
+    const bulkSection = document.getElementById('bulkStudentSection');
+    const tabSingleBtn = document.getElementById('tabSingleBtn');
+    const tabBulkBtn = document.getElementById('tabBulkBtn');
 
-    if (!no || !name || !name.trim()) {
-      return alert("กรุณากรอกเลขที่และชื่อ-นามสกุลนักเรียนให้ครบถ้วน");
+    if (tab === 'single') {
+      singleSection.style.display = 'block';
+      bulkSection.style.display = 'none';
+      tabSingleBtn.classList.add('active');
+      tabBulkBtn.classList.remove('active');
+    } else {
+      singleSection.style.display = 'none';
+      bulkSection.style.display = 'block';
+      tabSingleBtn.classList.remove('active');
+      tabBulkBtn.classList.add('active');
     }
+  }
 
-    closeModal('addStudentModal');
-    showCutePopup("🎒", "กำลังเพิ่มนักเรียน...", `ต้อนรับ "${name.trim()}" เข้าห้อง ${cls} น้า~`);
+  function submitStudentForm() {
+    let cls = document.getElementById('classSelect').value;
+    if (!cls) return;
 
-    google.script.run
-      .withSuccessHandler(() => {
-        fetchData(false);
-        showCutePopup("🎉", "เพิ่มนักเรียนสำเร็จ!", "นักเรียนใหม่พร้อมบันทึกคะแนนแล้วจ้า", 750);
-      })
-      .withFailureHandler(err => {
-        hideCutePopup();
-        alert("เพิ่มนักเรียนไม่สำเร็จ: " + err);
-      })
-      .addStudent(cls, Number(no), name.trim());
+    if (activeStudentTab === 'single') {
+      let no = document.getElementById('newStudentNo').value;
+      let name = document.getElementById('newStudentName').value;
+
+      if (!no || !name || !name.trim()) {
+        return alert("กรุณากรอกเลขที่และชื่อ-นามสกุลนักเรียนให้ครบถ้วน");
+      }
+
+      closeModal('addStudentModal');
+      showCutePopup("🎒", "กำลังเพิ่มนักเรียน...", `ต้อนรับ "${name.trim()}" เข้าห้อง ${cls} น้า~`);
+
+      google.script.run
+        .withSuccessHandler(() => {
+          fetchData(false);
+          showCutePopup("🎉", "เพิ่มนักเรียนสำเร็จ!", "นักเรียนใหม่พร้อมบันทึกคะแนนแล้วจ้า", 750);
+        })
+        .withFailureHandler(err => {
+          hideCutePopup();
+          alert("เพิ่มนักเรียนไม่สำเร็จ: " + err);
+        })
+        .addStudent(cls, Number(no), name.trim());
+    } else {
+      // แบบที่ 2: วางรายชื่อทีละหลายคน (Bulk Import)
+      let text = document.getElementById('bulkStudentsText').value.trim();
+      if (!text) return alert("กรุณาวางรายชื่อนักเรียนก่อนกดบันทึกครับ");
+
+      let lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+      if (lines.length === 0) return alert("ไม่พบรายชื่อนักเรียน");
+
+      let startNo = 1;
+      if (cachedData && cachedData.students && cachedData.students.length > 0) {
+        startNo = cachedData.students[cachedData.students.length - 1].no + 1;
+      }
+
+      let studentList = [];
+      lines.forEach((line, idx) => {
+        // ตรวจสอบว่าบรรทัดขึ้นต้นด้วยเลขที่หรือไม่ เช่น "1 ด.ช. ตัวอย่าง"
+        let match = line.match(/^(\d+)[\.\s\t]+(.+)$/);
+        if (match) {
+          studentList.push({ no: parseInt(match[1]), name: match[2].trim() });
+        } else {
+          studentList.push({ no: startNo + idx, name: line });
+        }
+      });
+
+      closeModal('addStudentModal');
+      showCutePopup("🎒", "กำลังนำเข้ารายชื่อ...", `กำลังเพิ่มนักเรียน ${studentList.length} คน เข้าห้อง ${cls} จ้า~`);
+
+      google.script.run
+        .withSuccessHandler(() => {
+          fetchData(false);
+          showCutePopup("🎉", `เพิ่มนักเรียน ${studentList.length} คน สำเร็จ!`, "รายชื่อทั้งหมดพร้อมบันทึกคะแนนแล้วจ้า", 800);
+        })
+        .withFailureHandler(err => {
+          hideCutePopup();
+          alert("นำเข้ารายชื่อไม่สำเร็จ: " + err);
+        })
+        .addMultipleStudents(cls, studentList);
+    }
   }
 
   /**
@@ -1676,21 +1693,21 @@
     let html = '';
     users.forEach(u => {
       const roleBadge = (u.role === 'admin') 
-        ? '<span class="role-pill role-admin" style="font-size:10px;">Admin</span>' 
-        : '<span class="role-pill role-user" style="font-size:10px;">User</span>';
+        ? '<span class="role-tag role-admin" style="font-size:9.5px;">Admin</span>' 
+        : '<span class="role-tag role-user" style="font-size:9.5px;">User</span>';
       
       const delBtn = (u.userId !== 'ADM01') 
-        ? `<button type="button" class="btn-secondary-action" style="padding:4px 8px; color:red; box-shadow:none;" onclick="deleteUserPrompt('${u.userId}', '${u.name}')"><i class="fas fa-trash"></i></button>`
+        ? `<button type="button" class="tool-icon-btn" style="width:28px; height:28px; color:red; box-shadow:none;" onclick="deleteUserPrompt('${u.userId}', '${u.name}')"><i class="fas fa-trash"></i></button>`
         : '';
 
       html += `
         <div class="user-list-item">
-          <div class="user-info-text">
+          <div style="flex:1; min-width:0;">
             <div class="user-info-name">${u.name} ${roleBadge}</div>
             <div class="user-info-sub">ID: ${u.userId} | วิชา: ${u.subject || '-'} | PIN: •••• (${u.pin})</div>
           </div>
           <div style="display:flex; gap:4px;">
-            <button type="button" class="btn-secondary-action" style="padding:4px 8px; box-shadow:none;" onclick='editUserPrompt(${JSON.stringify(u)})'><i class="fas fa-pen"></i></button>
+            <button type="button" class="tool-icon-btn" style="width:28px; height:28px; box-shadow:none;" onclick='editUserPrompt(${JSON.stringify(u)})'><i class="fas fa-pen"></i></button>
             ${delBtn}
           </div>
         </div>
