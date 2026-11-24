@@ -263,10 +263,8 @@ function getOrCreateUsersSheet() {
   if (sheet.getLastRow() < 2) {
     sheet.clear();
     sheet.appendRow(["UserID", "Name", "Subject", "PIN", "Role", "CreatedAt"]);
-    sheet.appendRow(["ADM01", "ครูบอส", "ภาษาไทย", "8055", "admin", new Date()]);
-    sheet.appendRow(["TCH01", "ครูสมหมาย มีสุข", "คณิตศาสตร์", "1234", "user", new Date()]);
-    sheet.appendRow(["TCH02", "ครูสมศรี มณีฉาย", "วิทยาศาสตร์", "5678", "user", new Date()]);
-    sheet.appendRow(["TCH03", "ครูวีระ รักชาติ", "สังคมศึกษา", "9999", "user", new Date()]);
+    sheet.appendRow(["ADM01", "ครูบอส", "ภาษาไทย", "'8055", "admin", new Date()]);
+    sheet.appendRow(["TCH13", "ครูไอรดา", "ภาษาอังกฤษ", "'9012", "user", new Date()]);
   }
   formatUsersSheet(sheet);
   return sheet;
@@ -737,47 +735,16 @@ function setupInitialSheets() {
   // 2. ชีต Users (รหัสผู้ใช้, ชื่อ, วิชา, PIN, Role)
   var userSheet = getOrCreateUsersSheet();
   
-  // 3. ชีตคะแนน ชั้นประถมศึกษาปีที่ 5/1_ADM01 (ภาษาไทย ครูบอส)
-  var s1 = ss.getSheetByName("ชั้นประถมศึกษาปีที่ 5/1_ADM01") || ss.getSheetByName("ป.5/1_ADM01");
+  // 3. ชีตคะแนน ชั้นประถมศึกษาปีที่ 6/1_ADM01 (ภาษาไทย ครูบอส)
+  var s1 = ss.getSheetByName("ชั้นประถมศึกษาปีที่ 6/1_ADM01") || ss.getSheetByName("ป.6/1_ADM01");
   if (!s1) {
-    s1 = ss.insertSheet("ชั้นประถมศึกษาปีที่ 5/1_ADM01");
-    s1.appendRow(["No", "Name", "Class", "คะแนนเก็บภาษาไทย (10)", "การอ่านคิดวิเคราะห์ (10)", "สอบกลางภาคไทย (20)"]);
-    var h1 = s1.getRange(1, 1, 1, 6);
+    s1 = ss.insertSheet("ชั้นประถมศึกษาปีที่ 6/1_ADM01");
+    s1.appendRow(["No", "Name", "Class", "คะแนนเก็บ (10)", "สอบกลางภาค (20)"]);
+    var h1 = s1.getRange(1, 1, 1, 5);
     h1.setFontWeight("bold").setBackground("#6c5ce7").setFontColor("#ffffff").setHorizontalAlignment("center");
-    
-    var st5_1 = [
-      [1, "ด.ช. ตัวอย่าง รักเรียน", "ชั้นประถมศึกษาปีที่ 5/1", 9, 8, 18],
-      [2, "ด.ญ. มานี มีตา", "ชั้นประถมศึกษาปีที่ 5/1", 10, 10, 19],
-      [3, "ด.ช. ชูใจ ใจดี", "ชั้นประถมศึกษาปีที่ 5/1", 8, 7, 15],
-      [4, "ด.ญ. ปิติ สุขใจ", "ชั้นประถมศึกษาปีที่ 5/1", 7, 9, 16],
-      [5, "ด.ช. วีระ มานะ", "ชั้นประถมศึกษาปีที่ 5/1", 10, 9, 17]
-    ];
-    st5_1.forEach(function(r) { s1.appendRow(r); });
-  } else if (s1.getName() === "ป.5/1_ADM01") {
-    try { s1.setName("ชั้นประถมศึกษาปีที่ 5/1_ADM01"); } catch(e) {}
   }
 
-  // 4. ชีตคะแนน ชั้นประถมศึกษาปีที่ 5/1_TCH01 (คณิตศาสตร์ ครูสมหมาย)
-  var s2 = ss.getSheetByName("ชั้นประถมศึกษาปีที่ 5/1_TCH01") || ss.getSheetByName("ป.5/1_TCH01");
-  if (!s2) {
-    s2 = ss.insertSheet("ชั้นประถมศึกษาปีที่ 5/1_TCH01");
-    s2.appendRow(["No", "Name", "Class", "การบ้านคณิต (10)", "สอบเก็บคะแนนคณิต (15)"]);
-    var h2 = s2.getRange(1, 1, 1, 5);
-    h2.setFontWeight("bold").setBackground("#a29bfe").setFontColor("#ffffff").setHorizontalAlignment("center");
-    
-    var st5_2 = [
-      [1, "ด.ช. ตัวอย่าง รักเรียน", "ชั้นประถมศึกษาปีที่ 5/1", 8, 14],
-      [2, "ด.ญ. มานี มีตา", "ชั้นประถมศึกษาปีที่ 5/1", 10, 15],
-      [3, "ด.ช. ชูใจ ใจดี", "ชั้นประถมศึกษาปีที่ 5/1", 7, 11],
-      [4, "ด.ญ. ปิติ สุขใจ", "ชั้นประถมศึกษาปีที่ 5/1", 9, 12],
-      [5, "ด.ช. วีระ มานะ", "ชั้นประถมศึกษาปีที่ 5/1", 8, 13]
-    ];
-    st5_2.forEach(function(r) { s2.appendRow(r); });
-  } else if (s2.getName() === "ป.5/1_TCH01") {
-    try { s2.setName("ชั้นประถมศึกษาปีที่ 5/1_TCH01"); } catch(e) {}
-  }
-  
-  // 5. ลบแผ่นงานเริ่มต้นหรือแผ่นงานตกค้างที่ไม่ได้ใช้งาน (Sheet1, แผ่นงาน1, undefined_*)
+  // 4. ลบแผ่นงานเริ่มต้นหรือแผ่นงานตกค้างที่ไม่ได้ใช้งาน (Sheet1, แผ่นงาน1, undefined_*)
   var junkSheets = ss.getSheets().filter(function(sh) {
     var name = sh.getName();
     return name.indexOf("undefined") === 0 || name === "Sheet1" || name === "แผ่นงาน1";
@@ -789,6 +756,7 @@ function setupInitialSheets() {
       } catch(e) {}
     }
   });
+}
   
   SpreadsheetApp.flush();
   return "Success";

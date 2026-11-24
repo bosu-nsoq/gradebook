@@ -1018,59 +1018,43 @@
   let autoSaveTimeout = null;
   let activeStudentTab = 'single';
 
-  // Mock Store บน GitHub Pages (ใช้ชื่อระดับชั้นเป็นชื่อเต็ม)
+  // Mock Store บน GitHub Pages ซิงค์ตรงกับ Google Sheet จริง 100%
   let mockStore = {
     users: [
       { row: 2, userId: "ADM01", name: "ครูบอส", subject: "ภาษาไทย", pin: "8055", role: "admin" },
-      { row: 3, userId: "TCH01", name: "ครูสมหมาย มีสุข", subject: "คณิตศาสตร์", pin: "1234", role: "user" },
-      { row: 4, userId: "TCH02", name: "ครูสมศรี มณีฉาย", subject: "วิทยาศาสตร์", pin: "5678", role: "user" },
-      { row: 5, userId: "TCH03", name: "ครูวีระ รักชาติ", subject: "สังคมศึกษา", pin: "9999", role: "user" }
+      { row: 3, userId: "TCH13", name: "ครูไอรดา", subject: "ภาษาอังกฤษ", pin: "9012", role: "user" }
     ],
-    // ข้อมูลนักเรียนส่วนกลาง: เลขที่, ชื่อ, ชั้น
+    // ข้อมูลนักเรียนส่วนกลาง: ดึงตรงจากชีต Students จริง (อิงข้อมูลชีตล่าสุด)
     students: [
-      { no: 1, name: "ด.ช. ตัวอย่าง รักเรียน", className: "ชั้นประถมศึกษาปีที่ 5/1" },
-      { no: 2, name: "ด.ญ. มานี มีตา", className: "ชั้นประถมศึกษาปีที่ 5/1" },
-      { no: 3, name: "ด.ช. ชูใจ ใจดี", className: "ชั้นประถมศึกษาปีที่ 5/1" },
-      { no: 4, name: "ด.ญ. ปิติ สุขใจ", className: "ชั้นประถมศึกษาปีที่ 5/1" },
-      { no: 5, name: "ด.ช. วีระ มานะ", className: "ชั้นประถมศึกษาปีที่ 5/1" },
-      { no: 1, name: "ด.ช. สมศักดิ์ สดใส", className: "ชั้นประถมศึกษาปีที่ 5/2" },
-      { no: 2, name: "ด.ญ. สมใจ มั่นคง", className: "ชั้นประถมศึกษาปีที่ 5/2" },
       { no: 1, name: "ด.ช. เก่งกล้า ท้าทาย", className: "ชั้นประถมศึกษาปีที่ 6/1" },
       { no: 2, name: "ด.ญ. สวยสม นิยมไทย", className: "ชั้นประถมศึกษาปีที่ 6/1" }
     ],
     // ตารางคะแนนแยกตาม [ClassName]_[UserID]
     scores: {
-      "ชั้นประถมศึกษาปีที่ 5/1_ADM01": {
+      "ชั้นประถมศึกษาปีที่ 6/1_ADM01": {
         headers: [
-          { name: "คะแนนเก็บภาษาไทย (10)", colIndex: 3, max: 10 },
-          { name: "การอ่านคิดวิเคราะห์ (10)", colIndex: 4, max: 10 },
-          { name: "สอบกลางภาคไทย (20)", colIndex: 5, max: 20 }
+          { name: "คะแนนเก็บ (10)", colIndex: 3, max: 10 },
+          { name: "สอบกลางภาค (20)", colIndex: 4, max: 20 }
         ],
         values: {
-          1: { "คะแนนเก็บภาษาไทย (10)": 9, "การอ่านคิดวิเคราะห์ (10)": 8, "สอบกลางภาคไทย (20)": 18 },
-          2: { "คะแนนเก็บภาษาไทย (10)": 10, "การอ่านคิดวิเคราะห์ (10)": 10, "สอบกลางภาคไทย (20)": 19 },
-          3: { "คะแนนเก็บภาษาไทย (10)": 8, "การอ่านคิดวิเคราะห์ (10)": 7, "สอบกลางภาคไทย (20)": 15 },
-          4: { "คะแนนเก็บภาษาไทย (10)": 7, "การอ่านคิดวิเคราะห์ (10)": 9, "สอบกลางภาคไทย (20)": 16 },
-          5: { "คะแนนเก็บภาษาไทย (10)": 10, "การอ่านคิดวิเคราะห์ (10)": 9, "สอบกลางภาคไทย (20)": 17 }
+          1: { "คะแนนเก็บ (10)": "", "สอบกลางภาค (20)": "" },
+          2: { "คะแนนเก็บ (10)": "", "สอบกลางภาค (20)": "" }
         }
       },
-      "ชั้นประถมศึกษาปีที่ 5/1_TCH01": {
+      "ชั้นประถมศึกษาปีที่ 6/1_TCH13": {
         headers: [
-          { name: "การบ้านคณิต (10)", colIndex: 3, max: 10 },
-          { name: "สอบเก็บคะแนนคณิต (15)", colIndex: 4, max: 15 }
+          { name: "คะแนนเก็บ (10)", colIndex: 3, max: 10 },
+          { name: "สอบกลางภาค (20)", colIndex: 4, max: 20 }
         ],
         values: {
-          1: { "การบ้านคณิต (10)": 8, "สอบเก็บคะแนนคณิต (15)": 14 },
-          2: { "การบ้านคณิต (10)": 10, "สอบเก็บคะแนนคณิต (15)": 15 },
-          3: { "การบ้านคณิต (10)": 7, "สอบเก็บคะแนนคณิต (15)": 11 },
-          4: { "การบ้านคณิต (10)": 9, "สอบเก็บคะแนนคณิต (15)": 12 },
-          5: { "การบ้านคณิต (10)": 8, "สอบเก็บคะแนนคณิต (15)": 13 }
+          1: { "คะแนนเก็บ (10)": "", "สอบกลางภาค (20)": "" },
+          2: { "คะแนนเก็บ (10)": "", "สอบกลางภาค (20)": "" }
         }
       }
     }
   };
 
-  const MOCK_STORAGE_KEY = "gradebook_mock_store_v3";
+  const MOCK_STORAGE_KEY = "gradebook_sheet_synced_v5";
   function saveMockStore() {
     try {
       localStorage.setItem(MOCK_STORAGE_KEY, JSON.stringify(mockStore));
@@ -1212,10 +1196,14 @@
       try {
         if (prop === "loginAndLoadAll") {
           const pin = normalizePin(args[0]);
-          const user = mockStore.users.find(u => normalizePin(u.pin) === pin) || (pin === "8055" ? mockStore.users[0] : (pin === "1234" ? mockStore.users[1] : null));
+          const user = mockStore.users.find(u => normalizePin(u.pin) === pin) || (pin === "8055" ? mockStore.users[0] : (pin === "9012" ? mockStore.users[1] : null));
           if (user) {
             const classSet = {};
             mockStore.students.forEach(s => { if (s.className) classSet[formatClassName(s.className)] = true; });
+            Object.keys(mockStore.scores).forEach(k => {
+              let cName = k.split('_')[0];
+              if (cName) classSet[formatClassName(cName)] = true;
+            });
             const classes = Object.keys(classSet).sort();
             const classesData = {};
             classes.forEach(c => {
@@ -1234,6 +1222,10 @@
           const uId = args[0] || (currentUser ? currentUser.userId : "ADM01");
           const classSet = {};
           mockStore.students.forEach(s => { if (s.className) classSet[formatClassName(s.className)] = true; });
+          Object.keys(mockStore.scores).forEach(k => {
+            let cName = k.split('_')[0];
+            if (cName) classSet[formatClassName(cName)] = true;
+          });
           const classes = Object.keys(classSet).sort();
           const classesData = {};
           classes.forEach(c => {
@@ -1268,7 +1260,11 @@
           successFn("Success");
         } else if (prop === "getAllClassNames") {
           const classSet = {};
-          mockStore.students.forEach(s => { if (s.className) classSet[s.className] = true; });
+          mockStore.students.forEach(s => { if (s.className) classSet[formatClassName(s.className)] = true; });
+          Object.keys(mockStore.scores).forEach(k => {
+            let cName = k.split('_')[0];
+            if (cName) classSet[formatClassName(cName)] = true;
+          });
           const classes = Object.keys(classSet).sort();
           successFn(classes);
         } else if (prop === "getClassData") {
@@ -1582,13 +1578,20 @@
       .withFailureHandler(err => {
         console.warn("Login failure handler triggered, checking local fallback:", err);
         const pin = normalizePin(currentEnteredPin);
-        const user = mockStore.users.find(u => normalizePin(u.pin) === pin) || (pin === "8055" ? mockStore.users[0] : (pin === "1234" ? mockStore.users[1] : null));
+        const user = mockStore.users.find(u => normalizePin(u.pin) === pin) || (pin === "8055" ? mockStore.users[0] : (pin === "9012" ? mockStore.users[1] : null));
         if (user) {
           currentUser = { userId: user.userId, name: user.name, subject: user.subject, role: user.role, pin: pin };
           sessionStorage.setItem(SESSION_USER_KEY, JSON.stringify(currentUser));
           applyUserUI();
           
-          classList = ["ชั้นประถมศึกษาปีที่ 5/1", "ชั้นประถมศึกษาปีที่ 5/2", "ชั้นประถมศึกษาปีที่ 6/1"];
+          const classSet = {};
+          mockStore.students.forEach(s => { if (s.className) classSet[formatClassName(s.className)] = true; });
+          Object.keys(mockStore.scores).forEach(k => {
+            let cName = k.split('_')[0];
+            if (cName) classSet[formatClassName(cName)] = true;
+          });
+          classList = Object.keys(classSet).sort();
+          if (classList.length === 0) classList = ["ชั้นประถมศึกษาปีที่ 6/1"];
           allClassDataMap = {};
           classList.forEach(cls => {
             allClassDataMap[cls] = getMockClassData(cls, currentUser.userId);
