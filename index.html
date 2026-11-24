@@ -518,8 +518,8 @@
       <span class="sparkle-icon sp-1">✨</span>
       <span class="sparkle-icon sp-2">🌸</span>
     </div>
-    <div class="cute-popup-title" id="cutePopupTitle">กำลังบันทึกข้อมูล...</div>
-    <div class="cute-popup-sub" id="cutePopupSub">ระบบกำลังจัดการให้น้า~</div>
+    <div class="cute-popup-title" id="cutePopupTitle">กำลังโหลด</div>
+    <div class="cute-popup-sub" id="cutePopupSub">กรุณารอสักครู่นะครับ...</div>
   </div>
 </div>
 
@@ -912,28 +912,48 @@
     }, 1200);
   }
 
-  // ป๊อปอัพน่ารักสำหรับงานสำคัญ (เช่น สลับชั้นเรียน, เพิ่มนักเรียน)
-  function showCutePopup(icon, title, desc, autoCloseMs = 0) {
+  // ป๊อปอัพโหลดทำงานครั้งเดียว แสดงข้อความ "กำลังโหลด" เสมอ ไม่ซ้ำซ้อน
+  let isLoadingPopupActive = false;
+
+  function showLoading(desc = "กรุณารอสักครู่นะครับ...") {
     const overlay = document.getElementById('cutePopupOverlay');
     const iconEl = document.getElementById('cuteMascotIcon');
     const titleEl = document.getElementById('cutePopupTitle');
     const descEl = document.getElementById('cutePopupSub');
     
-    if (iconEl) iconEl.innerText = icon || "✏️";
-    if (titleEl) titleEl.innerText = title || "กำลังจัดการข้อมูล...";
-    if (descEl) descEl.innerText = desc || "ระบบกำลังซิงค์ให้อัตโนมัติน้า~";
+    if (cutePopupTimer) {
+      clearTimeout(cutePopupTimer);
+      cutePopupTimer = null;
+    }
+    
+    if (iconEl) iconEl.innerText = "⏳";
+    if (titleEl) titleEl.innerText = "กำลังโหลด";
+    if (descEl) descEl.innerText = desc || "กรุณารอสักครู่นะครับ...";
     
     if (overlay) overlay.style.display = 'flex';
-    
-    if (cutePopupTimer) clearTimeout(cutePopupTimer);
+    isLoadingPopupActive = true;
+  }
+
+  function hideLoading() {
+    isLoadingPopupActive = false;
+    const overlay = document.getElementById('cutePopupOverlay');
+    if (overlay) overlay.style.display = 'none';
+    if (cutePopupTimer) {
+      clearTimeout(cutePopupTimer);
+      cutePopupTimer = null;
+    }
+  }
+
+  function showCutePopup(icon, title, desc, autoCloseMs = 0) {
+    showLoading(desc || "กรุณารอสักครู่นะครับ...");
     if (autoCloseMs > 0) {
-      cutePopupTimer = setTimeout(hideCutePopup, autoCloseMs);
+      if (cutePopupTimer) clearTimeout(cutePopupTimer);
+      cutePopupTimer = setTimeout(hideLoading, autoCloseMs);
     }
   }
 
   function hideCutePopup() {
-    const overlay = document.getElementById('cutePopupOverlay');
-    if (overlay) overlay.style.display = 'none';
+    hideLoading();
   }
 
   /**
@@ -1230,7 +1250,7 @@
     const msg = document.getElementById('pinMsg');
     if (msg) msg.innerText = "กำลังตรวจสอบรหัส PIN...";
 
-    showCutePopup("🔑", "กำลังเปิดห้องเรียน...", "ตรวจสอบสิทธิ์และดึงข้อมูลส่วนตัวจ้า~");
+    showLoading("กำลังเข้าสู่ระบบ...");
 
     google.script.run
       .withSuccessHandler(res => {
@@ -1248,10 +1268,9 @@
             pinOverlay.style.opacity = '1';
           }, 250);
           
-          showCutePopup("✨", `ยินดีต้อนรับ ${currentUser.name}`, `เปิดสมุดบันทึกวิชา${currentUser.subject || 'ของครู'}แล้วจ้า`, 700);
           refreshClassList();
         } else {
-          hideCutePopup();
+          hideLoading();
           showPinError(res ? res.message : "รหัส PIN ไม่ถูกต้อง");
         }
       })
@@ -1270,10 +1289,9 @@
             pinOverlay.style.display = 'none';
             pinOverlay.style.opacity = '1';
           }, 250);
-          showCutePopup("✨", `ยินดีต้อนรับ ${currentUser.name}`, `เปิดสมุดบันทึกวิชา${currentUser.subject || 'ของครู'}แล้วจ้า`, 700);
           refreshClassList();
         } else {
-          hideCutePopup();
+          hideLoading();
           showPinError("รหัส PIN ไม่ถูกต้อง");
         }
       })
@@ -1339,8 +1357,8 @@
     const newUrl = prompt("ใส่ Google Apps Script Web App URL (ลงท้ายด้วย /exec):", currentUrl);
     if (newUrl !== null) {
       localStorage.setItem(GAS_URL_KEY, newUrl.trim());
-      showCutePopup("⚙️", "บันทึก URL เรียบร้อย", "กำลังเชื่อมต่อไปยัง Google Sheet จริง...", 700);
-      setTimeout(() => location.reload(), 700);
+      showLoading("กำลังเชื่อมต่อไปยัง Google Sheet...");
+      setTimeout(() => location.reload(), 500);
     }
   }
 
@@ -1384,13 +1402,16 @@
         let targetCls = selectClassName ? classList.find(c => String(c).trim() === String(selectClassName).trim()) : null;
         if (targetCls) { 
           select.value = targetCls; 
-          fetchData(true); 
+          fetchData(!isLoadingPopupActive); 
         } else if (classList.length > 0) {
           select.value = classList[0];
-          fetchData(true);
+          fetchData(!isLoadingPopupActive);
+        } else {
+          hideLoading();
         }
       })
       .withFailureHandler(err => {
+        hideLoading();
         console.error("Fetch classes error:", err);
       })
       .getAllClassNames();
@@ -1423,15 +1444,15 @@
       return;
     }
 
-    showCutePopup("🗑️", "กำลังลบชั้นเรียน...", `ลบ ${displayName} ออกจากระบบน้า~`);
+    showLoading(`กำลังลบ ${displayName}...`);
 
     google.script.run
       .withSuccessHandler(res => {
-        showCutePopup("✨", `ลบ ${displayName} สำเร็จ`, "อัปเดตรายชื่อชั้นเรียนเรียบร้อยแล้วจ้า", 800);
+        showCuteSaveToast(`🗑️ ลบ ${displayName} เรียบร้อยแล้ว`);
         refreshClassList();
       })
       .withFailureHandler(err => {
-        hideCutePopup();
+        hideLoading();
         alert("เกิดข้อผิดพลาดในการลบชั้นเรียน: " + err);
       })
       .deleteClass(cls);
@@ -1457,32 +1478,35 @@
       refreshClassList();
       return;
     }
-    showCutePopup("🏫", "กำลังสร้างชั้นเรียน...", "บันทึกชั้นเรียนใหม่เข้าสู่ Google Sheets จ้า~");
+    showLoading(`กำลังสร้างห้อง ${className.trim()}...`);
     google.script.run
       .withSuccessHandler(res => {
         if (res === "Duplicate") {
-          hideCutePopup();
+          hideLoading();
           alert("ชื่อห้องเรียนนี้มีอยู่แล้วในระบบ");
           refreshClassList();
         } else {
-          showCutePopup("🎉", `สร้างห้อง ${className.trim()} สำเร็จ`, "พร้อมให้นักเรียนบันทึกคะแนนแล้วจ้า", 700);
+          showCuteSaveToast(`🎉 สร้างห้อง ${className.trim()} เรียบร้อยแล้ว`);
           refreshClassList(className.trim());
         }
       })
       .withFailureHandler(err => {
-        hideCutePopup();
+        hideLoading();
         alert("เกิดข้อผิดพลาดในการสร้างห้องเรียน: " + err);
         refreshClassList();
       })
       .createNewClass(className.trim());
   }
 
-  function fetchData(showCute = true) {
+  function fetchData(showLoadingIndicator = true) {
     let cls = document.getElementById('classSelect').value;
-    if (!cls || cls === "__NEW_CLASS__" || !currentUser) return;
+    if (!cls || cls === "__NEW_CLASS__" || !currentUser) {
+      hideLoading();
+      return;
+    }
     
-    if (showCute) {
-      showCutePopup("📚", "กำลังเปิดสมุดคะแนน...", `โหลดคะแนนวิชา${currentUser.subject || ''} ห้อง ${cls} จ้า~`);
+    if (showLoadingIndicator) {
+      showLoading("กำลังดึงข้อมูลคะแนน...");
     }
 
     google.script.run
@@ -1492,9 +1516,14 @@
         lastFocusedIndex = null; 
         populateStudentDropdown();
         renderUI();
-        if (showCute) {
-          showCutePopup("✨", "โหลดข้อมูลสำเร็จ!", "คะแนนเป็นปัจจุบันเรียบร้อยแล้วจ้า", 550);
-        }
+        hideLoading();
+      })
+      .withFailureHandler(err => {
+        hideLoading();
+        console.error("Fetch data error:", err);
+      })
+      .getClassData(cls, currentUser.userId);
+  }
       })
       .withFailureHandler(err => {
         hideCutePopup();
@@ -1716,15 +1745,16 @@
     if(!max || !max.trim()) return;
     
     let fullHeader = `${name.trim()} (${max.trim()})`;
-    showCutePopup("📝", "กำลังเพิ่มช่องคะแนน...", `สร้างช่อง "${fullHeader}" ในวิชาของครูน้า~`);
+    showLoading(`กำลังเพิ่มช่อง "${fullHeader}"...`);
     
     google.script.run
       .withSuccessHandler(() => {
+        showCuteSaveToast(`📝 เพิ่มช่อง "${fullHeader}" เรียบร้อยแล้ว`);
         fetchData(false);
-        showCutePopup("🎉", "เพิ่มช่องคะแนนสำเร็จ!", "เริ่มบันทึกคะแนนช่องใหม่ได้เลยจ้า", 700);
+        hideLoading();
       })
       .withFailureHandler(err => {
-        hideCutePopup();
+        hideLoading();
         alert("เกิดข้อผิดพลาดในการเพิ่มช่องคะแนน: " + err);
       })
       .addHeader(cls, currentUser.userId, fullHeader);
@@ -1786,15 +1816,16 @@
       }
 
       closeModal('addStudentModal');
-      showCutePopup("🎒", "กำลังเพิ่มนักเรียน...", `ต้อนรับ "${name.trim()}" เข้าห้อง ${cls} น้า~`);
+      showLoading(`กำลังเพิ่ม "${name.trim()}"...`);
 
       google.script.run
         .withSuccessHandler(() => {
+          showCuteSaveToast(`🎒 เพิ่ม "${name.trim()}" เรียบร้อยแล้ว`);
           fetchData(false);
-          showCutePopup("🎉", "เพิ่มนักเรียนสำเร็จ!", "นักเรียนใหม่พร้อมบันทึกคะแนนแล้วจ้า", 750);
+          hideLoading();
         })
         .withFailureHandler(err => {
-          hideCutePopup();
+          hideLoading();
           alert("เพิ่มนักเรียนไม่สำเร็จ: " + err);
         })
         .addStudent(cls, Number(no), name.trim());
@@ -1823,12 +1854,21 @@
       });
 
       closeModal('addStudentModal');
-      showCutePopup("🎒", "กำลังนำเข้ารายชื่อ...", `กำลังเพิ่มนักเรียน ${studentList.length} คน เข้าห้อง ${cls} จ้า~`);
+      showLoading(`กำลังเพิ่มนักเรียน ${studentList.length} คน...`);
 
       google.script.run
         .withSuccessHandler(() => {
+          showCuteSaveToast(`🎒 เพิ่มนักเรียน ${studentList.length} คน เรียบร้อยแล้ว`);
           fetchData(false);
-          showCutePopup("🎉", `เพิ่มนักเรียน ${studentList.length} คน สำเร็จ!`, "รายชื่อทั้งหมดพร้อมบันทึกคะแนนแล้วจ้า", 800);
+          hideLoading();
+        })
+        .withFailureHandler(err => {
+          hideLoading();
+          alert("นำเข้ารายชื่อไม่สำเร็จ: " + err);
+        })
+        .addMultipleStudents(cls, studentList);
+    }
+  }
         })
         .withFailureHandler(err => {
           hideCutePopup();
@@ -1934,16 +1974,17 @@
     }
 
     const userData = { userId, name, subject, pin, role };
-    showCutePopup("👥", "กำลังบันทึกผู้ใช้...", "อัปเดตสิทธิ์และรหัส PIN จ้า~");
+    showLoading("กำลังบันทึกผู้ใช้...");
 
     google.script.run
       .withSuccessHandler(() => {
-        showCutePopup("🎉", "บันทึกผู้ใช้เรียบร้อย!", "ผู้ใช้สามารถเข้าสู่ระบบด้วยรหัส PIN ได้เลย", 750);
+        hideLoading();
+        showCuteSaveToast("👥 บันทึกผู้ใช้เรียบร้อยแล้ว");
         hideUserForm();
         loadUsersList();
       })
       .withFailureHandler(err => {
-        hideCutePopup();
+        hideLoading();
         alert("บันทึกผู้ใช้ไม่สำเร็จ: " + err);
       })
       .saveUser(userData);
@@ -1951,19 +1992,19 @@
 
   function deleteUserPrompt(userId, name) {
     if (!confirm(`ต้องการลบผู้ใช้ "${name}" (ID: ${userId}) ออกจากระบบหรือไม่?`)) return;
-    showCutePopup("🗑️", "กำลังลบผู้ใช้...", "ลบข้อมูลออกจากระบบ Google Sheets จ้า~");
+    showLoading(`กำลังลบผู้ใช้ ${name}...`);
     google.script.run
       .withSuccessHandler(res => {
+        hideLoading();
         if (res === "CannotDeleteMasterAdmin") {
-          hideCutePopup();
           alert("ไม่สามารถลบผู้ดูแลระบบหลัก (ADM01) ได้");
         } else {
-          showCutePopup("✨", "ลบผู้ใช้สำเร็จ", "อัปเดตรายชื่อผู้ใช้เรียบร้อยแล้ว", 700);
+          showCuteSaveToast(`🗑️ ลบผู้ใช้ ${name} เรียบร้อยแล้ว`);
           loadUsersList();
         }
       })
       .withFailureHandler(err => {
-        hideCutePopup();
+        hideLoading();
         alert("เกิดข้อผิดพลาดในการลบผู้ใช้: " + err);
       })
       .deleteUser(userId);
