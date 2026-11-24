@@ -271,6 +271,17 @@
     .btn-popup-add-class:hover {
       background: rgba(108, 92, 231, 0.08);
     }
+    .quick-preset-pill {
+      border: 1px solid #d1d8fc; background: #f8f9fe; color: #4b4b4b;
+      padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 600;
+      cursor: pointer; transition: all 0.15s ease; font-family: 'Mali', cursive;
+    }
+    .quick-preset-pill:hover {
+      background: #eef1ff; border-color: #6c5ce7; color: #6c5ce7;
+    }
+    .quick-preset-pill.active {
+      background: #6c5ce7; color: white; border-color: #6c5ce7;
+    }
 
     /* ============================================================
        แถบเลื่อนนักเรียน (Navigator) - จัดระยะห่างไม่ทับซ้อนเด็ดขาด
@@ -872,6 +883,46 @@
       <div id="studentListContainer" class="popup-item-list">
         <!-- รายชื่อนักเรียน เรนเดอร์เป็นปุ่มการ์ด -->
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     MODAL 5: ADD SCORE TOPIC (ป๊อปอัพเพิ่มช่องคะแนน)
+     ============================================================ -->
+<div class="modal-overlay" id="addScoreModal" onclick="closeOnOverlayClick(event, 'addScoreModal')">
+  <div class="modal-card" style="max-width: 400px;">
+    <div class="modal-header">
+      <h3><i class="fas fa-plus-circle"></i> เพิ่มช่องคะแนนใหม่</h3>
+      <button type="button" class="modal-close-btn" onclick="closeModal('addScoreModal')">&times;</button>
+    </div>
+    <div class="modal-body" style="padding: 16px 18px;">
+      <div class="form-group">
+        <label>ชั้นเรียน</label>
+        <input type="text" class="form-control" id="modalScoreClassName" readonly style="background:#f1f2f6; font-weight:700;">
+      </div>
+      <div class="form-group">
+        <label>ชื่อช่องคะแนน / กิจกรรม <span style="color:red;">*</span></label>
+        <input type="text" class="form-control" id="newScoreTopicName" placeholder="เช่น ใบงานที่ 2, สอบท้ายบท, ชิ้นงาน" onkeydown="if(event.key === 'Enter') submitScoreTopicForm()">
+      </div>
+      <div class="form-group">
+        <label>คะแนนเต็ม <span style="color:red;">*</span></label>
+        <input type="number" class="form-control" id="newScoreMaxVal" placeholder="ระบุคะแนนเต็ม เช่น 10, 20" min="1" step="1" value="10" onkeydown="if(event.key === 'Enter') submitScoreTopicForm()">
+        <div style="display:flex; gap:6px; margin-top:8px; flex-wrap:wrap; align-items:center;">
+          <span style="font-size:11.5px; color:#666; margin-right:4px;">ด่วน:</span>
+          <button type="button" class="quick-preset-pill" onclick="setQuickMaxScore(5)">5</button>
+          <button type="button" class="quick-preset-pill active" onclick="setQuickMaxScore(10)">10</button>
+          <button type="button" class="quick-preset-pill" onclick="setQuickMaxScore(15)">15</button>
+          <button type="button" class="quick-preset-pill" onclick="setQuickMaxScore(20)">20</button>
+          <button type="button" class="quick-preset-pill" onclick="setQuickMaxScore(30)">30</button>
+          <button type="button" class="quick-preset-pill" onclick="setQuickMaxScore(50)">50</button>
+          <button type="button" class="quick-preset-pill" onclick="setQuickMaxScore(100)">100</button>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn-quick-student" style="background:#eee; color:#555; box-shadow:none;" onclick="closeModal('addScoreModal')">ยกเลิก</button>
+      <button type="button" class="btn-quick-student" onclick="submitScoreTopicForm()">บันทึกช่องคะแนน</button>
     </div>
   </div>
 </div>
@@ -2134,16 +2185,65 @@
   }
 
   function addTopic() {
+    openAddScoreModal();
+  }
+
+  function openAddScoreModal() {
     let cls = document.getElementById('classSelect').value;
-    if (!cls || cls === "__NEW_CLASS__" || !currentUser) return alert("กรุณาเลือกชั้นเรียนก่อนครับ");
+    if (!cls || cls === "__NEW_CLASS__" || !currentUser) {
+      return alert("กรุณาเลือกชั้นเรียนก่อนเพิ่มช่องคะแนนครับ");
+    }
+    const classInput = document.getElementById('modalScoreClassName');
+    if (classInput) classInput.value = formatClassName(cls);
     
-    let name = prompt("ชื่อช่องคะแนน (เช่น ใบงานที่ 2, ชิ้นงาน):"); 
-    if(!name || !name.trim()) return;
+    const nameInput = document.getElementById('newScoreTopicName');
+    if (nameInput) nameInput.value = "";
     
-    let max = prompt("คะแนนเต็ม (ตัวเลข เช่น 10, 20):"); 
-    if(!max || !max.trim()) return;
+    const maxInput = document.getElementById('newScoreMaxVal');
+    if (maxInput) maxInput.value = "10";
+    setQuickMaxScore(10);
+
+    openModal('addScoreModal');
+    setTimeout(() => { if (nameInput) nameInput.focus(); }, 150);
+  }
+
+  function setQuickMaxScore(val) {
+    const maxInput = document.getElementById('newScoreMaxVal');
+    if (maxInput) maxInput.value = val;
+    document.querySelectorAll('.quick-preset-pill').forEach(btn => {
+      if (parseInt(btn.innerText) === val) btn.classList.add('active');
+      else btn.classList.remove('active');
+    });
+  }
+
+  function submitScoreTopicForm() {
+    let cls = document.getElementById('classSelect').value;
+    if (!cls || cls === "__NEW_CLASS__" || !currentUser) {
+      return alert("กรุณาเลือกชั้นเรียนก่อนครับ");
+    }
+
+    const nameInput = document.getElementById('newScoreTopicName');
+    const maxInput = document.getElementById('newScoreMaxVal');
     
-    let fullHeader = `${name.trim()} (${max.trim()})`;
+    let name = nameInput ? nameInput.value.trim() : "";
+    let max = maxInput ? maxInput.value.trim() : "";
+
+    if (!name) {
+      alert("กรุณาระบุชื่อช่องคะแนน / กิจกรรมครับ");
+      if (nameInput) nameInput.focus();
+      return;
+    }
+
+    let maxNum = parseInt(max);
+    if (!max || isNaN(maxNum) || maxNum <= 0) {
+      alert("กรุณาระบุคะแนนเต็มเป็นตัวเลขที่มากกว่า 0 ครับ");
+      if (maxInput) maxInput.focus();
+      return;
+    }
+
+    let fullHeader = `${name} (${maxNum})`;
+    closeModal('addScoreModal');
+    
     showLoading(`กำลังเพิ่มช่อง "${fullHeader}"...`);
     
     google.script.run
