@@ -80,6 +80,20 @@ function getOrCreateStudentsSheet() {
   var sheet = ss.getSheetByName("Students");
   if (!sheet) {
     sheet = ss.insertSheet("Students");
+  }
+
+  var data = sheet.getDataRange().getValues();
+  var hasStudents = false;
+  for (var i = 1; i < data.length; i++) {
+    if (data[i][1] && String(data[i][1]).trim() !== "") {
+      hasStudents = true;
+      break;
+    }
+  }
+
+  // หากไม่มีข้อมูลนักเรียน ให้สร้างตัวอย่าง
+  if (!hasStudents) {
+    sheet.clear();
     // หัวตาราง: เลขที่, ชื่อ, ชั้น
     sheet.appendRow(["เลขที่", "ชื่อ", "ชั้น"]);
     
@@ -104,6 +118,7 @@ function getOrCreateStudentsSheet() {
       .setBackground("#6c5ce7")
       .setFontColor("#ffffff")
       .setHorizontalAlignment("center");
+    SpreadsheetApp.flush();
   }
   return sheet;
 }
@@ -399,29 +414,48 @@ function getClassData(className, userId) {
 
   // รวมรายชื่อนักเรียนจาก Roster กับคะแนนที่มี
   var finalStudents = [];
-  studentRoster.forEach(function(s, idx) {
-    var existing = scoreMap[s.no];
-    if (existing) {
-      finalStudents.push({
-        row: existing.row,
-        no: s.no,
-        name: s.name,
-        scores: existing.scores
+  if (studentRoster && studentRoster.length > 0) {
+    studentRoster.forEach(function(s, idx) {
+      var existing = scoreMap[s.no];
+      if (existing) {
+        finalStudents.push({
+          row: existing.row,
+          no: s.no,
+          name: s.name,
+          scores: existing.scores
+        });
+      } else {
+        // นักเรียนใหม่ที่ยังไม่มีแถวในชีตคะแนนของผู้ใช้นี้ ให้เติมต่อท้าย
+        var newRow = [s.no, s.name, s.className];
+        headers.forEach(function() { newRow.push(""); });
+        sheet.appendRow(newRow);
+        
+        finalStudents.push({
+          row: sheet.getLastRow(),
+          no: s.no,
+          name: s.name,
+          scores: {}
+        });
+      }
+    });
+  } else {
+    // หากชีต Students ว่าง ให้ดึงรายชื่อจากชีตคะแนนโดยตรง
+    for (var r = 1; r < data.length; r++) {
+      var rowNo = Number(data[r][0]);
+      var studentName = String(data[r][1] || "").trim();
+      if (!studentName) continue;
+      var scoresObj = {};
+      headers.forEach(function(h) {
+        scoresObj[h.name] = data[r][h.colIndex];
       });
-    } else {
-      // นักเรียนใหม่ที่ยังไม่มีแถวในชีตคะแนนของผู้ใช้นี้ ให้เติมต่อท้าย
-      var newRow = [s.no, s.name, s.className];
-      headers.forEach(function() { newRow.push(""); });
-      sheet.appendRow(newRow);
-      
       finalStudents.push({
-        row: sheet.getLastRow(),
-        no: s.no,
-        name: s.name,
-        scores: {}
+        row: r + 1,
+        no: rowNo || r,
+        name: studentName,
+        scores: scoresObj
       });
     }
-  });
+  }
 
   finalStudents.sort(function(a, b) {
     return a.no - b.no;

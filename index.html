@@ -1335,7 +1335,7 @@
   }
 
   function promptGasSettings() {
-    const currentUrl = localStorage.getItem(GAS_URL_KEY) || "";
+    const currentUrl = getGasUrl();
     const newUrl = prompt("ใส่ Google Apps Script Web App URL (ลงท้ายด้วย /exec):", currentUrl);
     if (newUrl !== null) {
       localStorage.setItem(GAS_URL_KEY, newUrl.trim());
