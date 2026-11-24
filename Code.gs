@@ -354,14 +354,16 @@ function deleteUser(userId) {
 // ============================================================
 
 function getUserScoreSheetName(className, userId) {
-  var uId = (userId && String(userId).trim()) ? String(userId).trim() : "ADM01";
-  return className + "_" + uId;
+  var cls = (className && String(className).trim() && String(className).trim() !== "undefined") ? String(className).trim() : "";
+  var uId = (userId && String(userId).trim() && String(userId).trim() !== "undefined") ? String(userId).trim() : "ADM01";
+  return cls ? (cls + "_" + uId) : "";
 }
 
 // ดึงข้อมูลคะแนนเฉพาะของ User คนนั้นในห้องเรียนนั้น
 function getClassData(className, userId) {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var sheetName = getUserScoreSheetName(className, userId);
+  if (!sheetName) return { headers: [], students: [] };
   var sheet = ss.getSheetByName(sheetName);
 
   // ดึงรายชื่อนักเรียนปัจจุบันในชั้นเรียนนี้จากชีต Students
@@ -605,13 +607,19 @@ function setupInitialSheets() {
     st5_2.forEach(function(r) { s2.appendRow(r); });
   }
   
-  // 5. ลบแผ่นงานเริ่มต้น (Sheet1 หรือ แผ่นงาน1) ที่ว่างเปล่า
-  var defaultSheet = ss.getSheetByName("Sheet1") || ss.getSheetByName("แผ่นงาน1");
-  if (defaultSheet && ss.getSheets().length > 1) {
-    try {
-      ss.deleteSheet(defaultSheet);
-    } catch(e) {}
-  }
+  // 5. ลบแผ่นงานเริ่มต้นหรือแผ่นงานตกค้างที่ไม่ได้ใช้งาน (Sheet1, แผ่นงาน1, undefined_*)
+  var junkSheets = ss.getSheets().filter(function(sh) {
+    var name = sh.getName();
+    return name.indexOf("undefined") === 0 || name === "Sheet1" || name === "แผ่นงาน1";
+  });
+  junkSheets.forEach(function(sh) {
+    if (ss.getSheets().length > 1) {
+      try {
+        ss.deleteSheet(sh);
+      } catch(e) {}
+    }
+  });
   
+  SpreadsheetApp.flush();
   return "Success";
 }
