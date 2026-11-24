@@ -1,14 +1,17 @@
 /**
  * ============================================================
  * แอปพลิเคชัน: Gradebook (ระบบบันทึกคะแนนนักเรียน)
- * สำหรับ: ครูบอส และคณะครู
+ * พัฒนาสำหรับ: ครูบอส และคณะครู
  * สภาพแวดล้อม: Google Apps Script + Google Sheets Web App
- * รองรับ: Role-based Access (Admin / User), PIN Login, การพิมพ์คะแนน
+ * คุณสมบัติ:
+ * 1. ข้อมูลนักเรียนส่วนกลางในชีต Students (ชื่อ, ชั้น, เลขที่)
+ * 2. แยกช่องเก็บคะแนนของผู้ใช้แต่ละคนอย่างเด็ดขาด (Class_UserID)
+ * 3. อัปเดตข้อมูลอัตโนมัติ และรองรับ API Mode
  * ============================================================
  */
 
 function doGet(e) {
-  // ตรวจสอบหากมีพารามิเตอร์ action (สำหรับเรียกผ่าน API จาก GitHub Pages หรือภายนอก)
+  // ตรวจสอบพารามิเตอร์ action สำหรับเรียกผ่าน API จาก GitHub Pages
   if (e && e.parameter && e.parameter.action) {
     try {
       var action = e.parameter.action;
@@ -31,7 +34,7 @@ function doGet(e) {
     }
   }
 
-  // โหมดแสดงผลหน้าเว็บปกติ (Google Apps Script Web App)
+  // โหมด Web App ปกติ
   var html;
   try {
     html = HtmlService.createHtmlOutputFromFile('index');
@@ -69,7 +72,99 @@ function doPost(e) {
 }
 
 // ============================================================
-// 1. ระบบจัดการข้อมูลผู้ใช้งาน (Users Sheet & Authentication)
+// 1. ระบบจัดการนักเรียนส่วนกลาง (ชีต Students: ชื่อ, ชั้น, เลขที่)
+// ============================================================
+
+function getOrCreateStudentsSheet() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName("Students");
+  if (!sheet) {
+    sheet = ss.insertSheet("Students");
+    // หัวตาราง: เลขที่, ชื่อ, ชั้น
+    sheet.appendRow(["เลขที่", "ชื่อ", "ชั้น"]);
+    
+    // ข้อมูลเริ่มต้นตัวอย่างหลายชั้นเรียน
+    var sampleStudents = [
+      [1, "ด.ช. ตัวอย่าง รักเรียน", "ป.5/1"],
+      [2, "ด.ญ. มานี มีตา", "ป.5/1"],
+      [3, "ด.ช. ชูใจ ใจดี", "ป.5/1"],
+      [4, "ด.ญ. ปิติ สุขใจ", "ป.5/1"],
+      [5, "ด.ช. วีระ มานะ", "ป.5/1"],
+      [1, "ด.ช. สมศักดิ์ สดใส", "ป.5/2"],
+      [2, "ด.ญ. สมใจ มั่นคง", "ป.5/2"],
+      [1, "ด.ช. เก่งกล้า ท้าทาย", "ป.6/1"],
+      [2, "ด.ญ. สวยสม นิยมไทย", "ป.6/1"]
+    ];
+    sampleStudents.forEach(function(row) {
+      sheet.appendRow(row);
+    });
+
+    var headerRange = sheet.getRange(1, 1, 1, 3);
+    headerRange.setFontWeight("bold")
+      .setBackground("#6c5ce7")
+      .setFontColor("#ffffff")
+      .setHorizontalAlignment("center");
+  }
+  return sheet;
+}
+
+// ดึงรายชื่อชั้นเรียนทั้งหมดจากคอลัมน์ "ชั้น" ในชีต Students
+function getAllClassNames() {
+  var sheet = getOrCreateStudentsSheet();
+  var data = sheet.getDataRange().getValues();
+  var classesSet = {};
+
+  for (var i = 1; i < data.length; i++) {
+    var cls = String(data[i][2]).trim();
+    if (cls) {
+      classesSet[cls] = true;
+    }
+  }
+
+  var classes = Object.keys(classesSet);
+  classes.sort();
+  if (classes.length === 0) {
+    classes = ["ป.5/1", "ป.5/2", "ป.6/1"];
+  }
+  return classes;
+}
+
+// ดึงรายชื่อนักเรียนเฉพาะชั้นเรียนที่เลือก
+function getStudentsByClass(className) {
+  var sheet = getOrCreateStudentsSheet();
+  var data = sheet.getDataRange().getValues();
+  var students = [];
+
+  for (var i = 1; i < data.length; i++) {
+    var no = data[i][0];
+    var name = String(data[i][1]).trim();
+    var cls = String(data[i][2]).trim();
+
+    if (cls === className && name) {
+      students.push({
+        no: Number(no),
+        name: name,
+        className: cls
+      });
+    }
+  }
+
+  // เรียงตามเลขที่
+  students.sort(function(a, b) {
+    return a.no - b.no;
+  });
+  return students;
+}
+
+// เพิ่มนักเรียนใหม่เข้าสู่ชีต Students (ชื่อ, ชั้น, เลขที่)
+function addStudent(className, no, name) {
+  var sheet = getOrCreateStudentsSheet();
+  sheet.appendRow([Number(no), String(name).trim(), String(className).trim()]);
+  return "Success";
+}
+
+// ============================================================
+// 2. ระบบจัดการผู้ใช้ (ชีต Users)
 // ============================================================
 
 function getOrCreateUsersSheet() {
@@ -77,13 +172,10 @@ function getOrCreateUsersSheet() {
   var sheet = ss.getSheetByName("Users");
   if (!sheet) {
     sheet = ss.insertSheet("Users");
-    // หัวตารางข้อมูลผู้ใช้
     sheet.appendRow(["UserID", "Name", "Subject", "PIN", "Role", "CreatedAt"]);
-    // ข้อมูลเริ่มต้น: ครูบอส (Admin) และผู้ใช้ตัวอย่าง (User)
     sheet.appendRow(["ADM01", "ครูบอส", "ภาษาไทย", "8055", "admin", new Date()]);
     sheet.appendRow(["TCH01", "ครูสมหมาย มีสุข", "คณิตศาสตร์", "1234", "user", new Date()]);
     
-    // จัดรูปแบบหัวตาราง
     var headerRange = sheet.getRange(1, 1, 1, 6);
     headerRange.setFontWeight("bold")
       .setBackground("#6c5ce7")
@@ -93,13 +185,11 @@ function getOrCreateUsersSheet() {
   return sheet;
 }
 
-// ตรวจสอบการเข้าสู่ระบบด้วย PIN
 function loginUserByPin(pin) {
   var sheet = getOrCreateUsersSheet();
   var data = sheet.getDataRange().getValues();
   var cleanPin = String(pin).trim();
 
-  // ตรวจสอบผู้ใช้ในตาราง (ข้ามแถวที่ 1 ซึ่งเป็น Header)
   for (var i = 1; i < data.length; i++) {
     var row = data[i];
     var userPin = String(row[3]).trim();
@@ -110,13 +200,12 @@ function loginUserByPin(pin) {
           userId: String(row[0]),
           name: String(row[1]),
           subject: String(row[2]),
-          role: String(row[4]).toLowerCase() // 'admin' หรือ 'user'
+          role: String(row[4]).toLowerCase()
         }
       };
     }
   }
 
-  // รองรับกรณีฉุกเฉิน: หากไม่มีข้อมูลแต่ใส่ 8055 ให้สิทธิ์ Admin ครูบอส
   if (cleanPin === "8055") {
     return {
       success: true,
@@ -132,7 +221,6 @@ function loginUserByPin(pin) {
   return { success: false, message: "รหัส PIN ไม่ถูกต้อง" };
 }
 
-// ดึงรายชื่อผู้ใช้ทั้งหมด (สำหรับโหมด Admin)
 function getUsers() {
   var sheet = getOrCreateUsersSheet();
   var data = sheet.getDataRange().getValues();
@@ -153,7 +241,6 @@ function getUsers() {
   return users;
 }
 
-// บันทึก/แก้ไขข้อมูลผู้ใช้ (สำหรับโหมด Admin)
 function saveUser(userData) {
   var sheet = getOrCreateUsersSheet();
   var data = sheet.getDataRange().getValues();
@@ -168,13 +255,11 @@ function saveUser(userData) {
   }
 
   if (rowIndex > 0) {
-    // แก้ไขข้อมูลเดิม
     sheet.getRange(rowIndex, 2).setValue(userData.name);
     sheet.getRange(rowIndex, 3).setValue(userData.subject);
     sheet.getRange(rowIndex, 4).setValue(String(userData.pin));
     sheet.getRange(rowIndex, 5).setValue(userData.role || "user");
   } else {
-    // เพิ่มผู้ใช้ใหม่
     sheet.appendRow([
       userId,
       userData.name,
@@ -187,13 +272,11 @@ function saveUser(userData) {
   return "Success";
 }
 
-// ลบผู้ใช้ (สำหรับโหมด Admin)
 function deleteUser(userId) {
   var sheet = getOrCreateUsersSheet();
   var data = sheet.getDataRange().getValues();
   var cleanId = String(userId).trim();
 
-  // ป้องกันการลบ Admin หลัก (ADM01)
   if (cleanId === "ADM01") return "CannotDeleteMasterAdmin";
 
   for (var i = 1; i < data.length; i++) {
@@ -206,142 +289,140 @@ function deleteUser(userId) {
 }
 
 // ============================================================
-// 2. ระบบจัดการห้องเรียนและคะแนน (Classrooms & Scores)
+// 3. ระบบแยกคะแนนรายบุคคลของผู้ใช้แต่ละคน (User-isolated Score Sheets)
+//    ชื่อชีตคะแนน: [ClassName]_[UserID] เช่น ป.5/1_ADM01
 // ============================================================
 
-// ดึงรายชื่อชั้นเรียนทั้งหมด (ยกเว้นชีตระบบ)
-function getAllClassNames() {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var sheets = ss.getSheets();
-  var systemSheets = ["Config", "Users", "System", "Settings", "Log"];
-  
-  var names = sheets.map(function(sheet) {
-    return sheet.getName();
-  }).filter(function(name) {
-    return systemSheets.indexOf(name) === -1;
-  });
-  return names;
+function getUserScoreSheetName(className, userId) {
+  var uId = (userId && String(userId).trim()) ? String(userId).trim() : "ADM01";
+  return className + "_" + uId;
 }
 
-// สร้างชั้นเรียนใหม่
-function createNewClass(className) {
+// ดึงข้อมูลคะแนนเฉพาะของ User คนนั้นในห้องเรียนนั้น
+function getClassData(className, userId) {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
-  if (ss.getSheetByName(className)) return "Duplicate"; // ชื่อซ้ำ
+  var sheetName = getUserScoreSheetName(className, userId);
+  var sheet = ss.getSheetByName(sheetName);
 
-  var sheet = ss.insertSheet(className);
-  // สร้างหัวตารางเริ่มต้น
-  sheet.appendRow(["No", "Name", "คะแนนเก็บ (10)", "สอบกลางภาค (20)"]);
-  // สร้างนักเรียนตัวอย่าง
-  sheet.appendRow([1, "ด.ช. ตัวอย่าง รักเรียน", "", ""]);
-  sheet.appendRow([2, "ด.ญ. มานี มีตา", "", ""]);
-  
-  return "Success";
-}
+  // ดึงรายชื่อนักเรียนปัจจุบันในชั้นเรียนนี้จากชีต Students
+  var studentRoster = getStudentsByClass(className);
 
-// ดึงข้อมูลนักเรียนและคะแนนของห้องเรียน
-function getClassData(className) {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var sheet = ss.getSheetByName(className);
-  if (!sheet) return null;
+  // หากยังไม่มีชีตคะแนนของผู้ใช้นี้ ให้สร้างชีตใหม่พร้อมหัวข้อเริ่มต้น
+  if (!sheet) {
+    sheet = ss.insertSheet(sheetName);
+    var defaultHeader = ["No", "Name", "Class", "คะแนนเก็บ (10)", "สอบกลางภาค (20)"];
+    sheet.appendRow(defaultHeader);
+    
+    // ใส่นักเรียนจาก Roster
+    studentRoster.forEach(function(s) {
+      sheet.appendRow([s.no, s.name, s.className, "", ""]);
+    });
+
+    sheet.getRange(1, 1, 1, defaultHeader.length)
+      .setFontWeight("bold")
+      .setBackground("#e8eaed");
+  }
 
   var data = sheet.getDataRange().getValues();
-  if (data.length < 2) return { headers: [], students: [] };
+  if (data.length < 1) return { headers: [], students: [] };
 
-  // อ่าน Header (เริ่ม Col C = index 2)
+  // อ่าน Header (เริ่ม Col D = index 3)
   var headers = [];
-  for (var i = 2; i < data[0].length; i++) {
-    var h = data[0][i];
+  for (var c = 3; c < data[0].length; c++) {
+    var h = String(data[0][c]);
     var max = 100;
-    var match = String(h).match(/\((\d+)\)/);
+    var match = h.match(/\((\d+)\)/);
     if (match) max = parseInt(match[1]);
-    headers.push({ name: String(h), colIndex: i, max: max });
+    headers.push({ name: h, colIndex: c, max: max });
   }
 
-  // อ่าน Students
-  var students = [];
-  for (var i = 1; i < data.length; i++) {
-    var row = data[i];
-    // ข้ามแถวที่ไม่มีชื่อหรือเลขที่
-    if (row[0] === "" || row[1] === "") continue;
-
-    var scores = {};
+  // อ่านคะแนนนักเรียนจากชีต
+  var scoreMap = {};
+  for (var r = 1; r < data.length; r++) {
+    var rowNo = Number(data[r][0]);
+    var scoresObj = {};
     headers.forEach(function(h) {
-      scores[h.name] = row[h.colIndex];
+      scoresObj[h.name] = data[r][h.colIndex];
     });
-
-    students.push({
-      row: i + 1,
-      no: row[0],
-      name: row[1],
-      scores: scores
-    });
+    scoreMap[rowNo] = {
+      row: r + 1,
+      scores: scoresObj
+    };
   }
-  
-  // เรียงตามเลขที่
-  students.sort(function(a, b) { 
-    return Number(a.no) - Number(b.no); 
+
+  // รวมรายชื่อนักเรียนจาก Roster กับคะแนนที่มี
+  var finalStudents = [];
+  studentRoster.forEach(function(s, idx) {
+    var existing = scoreMap[s.no];
+    if (existing) {
+      finalStudents.push({
+        row: existing.row,
+        no: s.no,
+        name: s.name,
+        scores: existing.scores
+      });
+    } else {
+      // นักเรียนใหม่ที่ยังไม่มีแถวในชีตคะแนนของผู้ใช้นี้ ให้เติมต่อท้าย
+      var newRow = [s.no, s.name, s.className];
+      headers.forEach(function() { newRow.push(""); });
+      sheet.appendRow(newRow);
+      
+      finalStudents.push({
+        row: sheet.getLastRow(),
+        no: s.no,
+        name: s.name,
+        scores: {}
+      });
+    }
   });
 
-  return { headers: headers, students: students };
+  finalStudents.sort(function(a, b) {
+    return a.no - b.no;
+  });
+
+  return { headers: headers, students: finalStudents };
 }
 
-// บันทึกคะแนน
-function saveScore(className, row, colIndex, value) {
+// บันทึกคะแนนลงในชีตคะแนนของผู้ใช้นั้นโดยเฉพาะ
+function saveScore(className, userId, row, colIndex, value) {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var sheet = ss.getSheetByName(className);
+  var sheetName = getUserScoreSheetName(className, userId);
+  var sheet = ss.getSheetByName(sheetName);
   if (!sheet) return "SheetNotFound";
+
   sheet.getRange(row, colIndex + 1).setValue(value);
   return "Success";
 }
 
-// เพิ่มช่องคะแนนใหม่
-function addHeader(className, headerName) {
+// เพิ่มช่องคะแนนใหม่ในชีตคะแนนของผู้ใช้นั้นโดยเฉพาะ
+function addHeader(className, userId, headerName) {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var sheet = ss.getSheetByName(className);
+  var sheetName = getUserScoreSheetName(className, userId);
+  var sheet = ss.getSheetByName(sheetName);
   if (!sheet) return "SheetNotFound";
-  sheet.getRange(1, sheet.getLastColumn() + 1).setValue(headerName);
+
+  var nextCol = sheet.getLastColumn() + 1;
+  sheet.getRange(1, nextCol).setValue(headerName);
   return "Success";
 }
 
-// เพิ่มนักเรียนใหม่เข้าห้องเรียน
-function addStudent(className, no, name) {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var sheet = ss.getSheetByName(className);
-  if (!sheet) return "SheetNotFound";
+// สร้างชั้นเรียนใหม่
+function createNewClass(className) {
+  var sheet = getOrCreateStudentsSheet();
+  var data = sheet.getDataRange().getValues();
+  var exists = false;
 
-  var lastCol = sheet.getLastColumn();
-  if (lastCol < 2) lastCol = 4;
-  
-  var newRow = new Array(lastCol).fill("");
-  newRow[0] = Number(no);
-  newRow[1] = String(name).trim();
+  for (var i = 1; i < data.length; i++) {
+    if (String(data[i][2]).trim() === String(className).trim()) {
+      exists = true;
+      break;
+    }
+  }
 
-  sheet.appendRow(newRow);
+  if (exists) return "Duplicate";
+
+  // เพิ่มนักเรียนตัวอย่างสำหรับห้องเรียนใหม่ในชีต Students
+  sheet.appendRow([1, "ด.ช. ตัวอย่าง รักเรียน", String(className).trim()]);
+  sheet.appendRow([2, "ด.ญ. มานี มีตา", String(className).trim()]);
   return "Success";
-}
-
-// ดึงข้อมูลภาพรวมเริ่มต้นแบบรวมศูนย์ (One-shot Background Sync)
-function getInitialAppData(pin) {
-  var auth = loginUserByPin(pin);
-  if (!auth.success) return { success: false, message: auth.message };
-
-  var classNames = getAllClassNames();
-  var currentClassData = null;
-  if (classNames.length > 0) {
-    currentClassData = getClassData(classNames[0]);
-  }
-
-  var users = [];
-  if (auth.user.role === 'admin') {
-    users = getUsers();
-  }
-
-  return {
-    success: true,
-    user: auth.user,
-    classNames: classNames,
-    firstClass: classNames.length > 0 ? classNames[0] : "",
-    currentClassData: currentClassData,
-    users: users
-  };
 }
