@@ -441,3 +441,72 @@ function createNewClass(className) {
   sheet.appendRow([2, "ด.ญ. มานี มีตา", String(className).trim()]);
   return "Success";
 }
+
+// ============================================================
+// 6. เมนูและฟังก์ชันสร้างชีตเริ่มต้นอัตโนมัติ
+// ============================================================
+
+function onOpen(e) {
+  try {
+    SpreadsheetApp.getUi()
+      .createMenu('Gradebook 🚀')
+      .addItem('🚀 เริ่มต้นสร้างชีตทั้งหมด (Students, Users, ห้องเรียน)', 'setupInitialSheets')
+      .addToUi();
+  } catch(err) {}
+}
+
+function setupInitialSheets() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  
+  // 1. ชีต Students (ชื่อ, ชั้น, เลขที่)
+  var studentSheet = getOrCreateStudentsSheet();
+  
+  // 2. ชีต Users (รหัสผู้ใช้, ชื่อ, วิชา, PIN, Role)
+  var userSheet = getOrCreateUsersSheet();
+  
+  // 3. ชีตคะแนน ป.5/1_ADM01 (ภาษาไทย ครูบอส)
+  var s1 = ss.getSheetByName("ป.5/1_ADM01");
+  if (!s1) {
+    s1 = ss.insertSheet("ป.5/1_ADM01");
+    s1.appendRow(["No", "Name", "Class", "คะแนนเก็บภาษาไทย (10)", "การอ่านคิดวิเคราะห์ (10)", "สอบกลางภาคไทย (20)"]);
+    var h1 = s1.getRange(1, 1, 1, 6);
+    h1.setFontWeight("bold").setBackground("#6c5ce7").setFontColor("#ffffff").setHorizontalAlignment("center");
+    
+    var st5_1 = [
+      [1, "ด.ช. ตัวอย่าง รักเรียน", "ป.5/1", 9, 8, 18],
+      [2, "ด.ญ. มานี มีตา", "ป.5/1", 10, 10, 19],
+      [3, "ด.ช. ชูใจ ใจดี", "ป.5/1", 8, 7, 15],
+      [4, "ด.ญ. ปิติ สุขใจ", "ป.5/1", 7, 9, 16],
+      [5, "ด.ช. วีระ มานะ", "ป.5/1", 10, 9, 17]
+    ];
+    st5_1.forEach(function(r) { s1.appendRow(r); });
+  }
+
+  // 4. ชีตคะแนน ป.5/1_TCH01 (คณิตศาสตร์ ครูสมหมาย)
+  var s2 = ss.getSheetByName("ป.5/1_TCH01");
+  if (!s2) {
+    s2 = ss.insertSheet("ป.5/1_TCH01");
+    s2.appendRow(["No", "Name", "Class", "การบ้านคณิต (10)", "สอบเก็บคะแนนคณิต (15)"]);
+    var h2 = s2.getRange(1, 1, 1, 5);
+    h2.setFontWeight("bold").setBackground("#a29bfe").setFontColor("#ffffff").setHorizontalAlignment("center");
+    
+    var st5_2 = [
+      [1, "ด.ช. ตัวอย่าง รักเรียน", "ป.5/1", 8, 14],
+      [2, "ด.ญ. มานี มีตา", "ป.5/1", 10, 15],
+      [3, "ด.ช. ชูใจ ใจดี", "ป.5/1", 7, 11],
+      [4, "ด.ญ. ปิติ สุขใจ", "ป.5/1", 9, 12],
+      [5, "ด.ช. วีระ มานะ", "ป.5/1", 8, 13]
+    ];
+    st5_2.forEach(function(r) { s2.appendRow(r); });
+  }
+  
+  // 5. ลบแผ่นงานเริ่มต้น (Sheet1 หรือ แผ่นงาน1) ที่ว่างเปล่า
+  var defaultSheet = ss.getSheetByName("Sheet1") || ss.getSheetByName("แผ่นงาน1");
+  if (defaultSheet && ss.getSheets().length > 1) {
+    try {
+      ss.deleteSheet(defaultSheet);
+    } catch(e) {}
+  }
+  
+  return "Success";
+}
