@@ -20,10 +20,10 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="Gradebook">
   
-  <!-- Google Fonts & Font Awesome -->
+  <!-- Google Fonts: Mali (Interactive) & Sarabun (Official Print) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Mali:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Mali:wght@400;500;600;700&family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
   <style>
@@ -31,13 +31,16 @@
     :root {
       --primary: #6c5ce7;
       --secondary: #a29bfe;
-      --glass-bg: rgba(255, 255, 255, 0.55);
-      --glass-border: rgba(255, 255, 255, 0.8);
+      --glass-bg: rgba(255, 255, 255, 0.6);
+      --glass-border: rgba(255, 255, 255, 0.85);
       --text-color: #2d3436;
       --input-bg: #ffffff;
       --success: #00b894;
+      --warning: #fdcb6e;
       --danger: #ff7675;
-      --card-shadow: 0 20px 50px rgba(108, 92, 231, 0.15);
+      --admin-badge: #e056fd;
+      --user-badge: #0984e3;
+      --card-shadow: 0 20px 50px rgba(108, 92, 231, 0.16);
     }
     
     * { 
@@ -72,17 +75,17 @@
       border: 2px solid var(--glass-border);
       border-radius: 40px;
       box-shadow: var(--card-shadow);
-      width: 90%; max-width: 420px; height: 95vh;
-      max-height: 840px;
-      padding: 24px;
+      width: 92%; max-width: 440px; height: 96vh;
+      max-height: 860px;
+      padding: 22px;
       display: flex; flex-direction: column;
       position: relative;
     }
 
-    /* --- Responsive Header (Single line on mobile vertical) --- */
+    /* --- Responsive Header (Single line on mobile vertical per Rule 3) --- */
     .header { 
       text-align: center; 
-      margin-bottom: 14px; 
+      margin-bottom: 12px; 
       position: relative;
     }
 
@@ -90,11 +93,11 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 10px;
-      background: rgba(255, 255, 255, 0.65);
-      border: 1.5px solid rgba(255, 255, 255, 0.9);
-      padding: 8px 14px;
-      border-radius: 24px;
+      gap: 8px;
+      background: rgba(255, 255, 255, 0.7);
+      border: 1.5px solid rgba(255, 255, 255, 0.95);
+      padding: 8px 12px;
+      border-radius: 22px;
       box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
     }
 
@@ -107,12 +110,12 @@
     }
 
     .header-logo {
-      width: 36px;
-      height: 36px;
-      border-radius: 10px;
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
       object-fit: cover;
       flex-shrink: 0;
-      box-shadow: 0 2px 8px rgba(108, 92, 231, 0.2);
+      box-shadow: 0 2px 8px rgba(108, 92, 231, 0.25);
     }
 
     .header-text {
@@ -127,29 +130,48 @@
       font-family: 'Mali', cursive;
       margin: 0; 
       font-weight: 700; 
-      font-size: 17px; 
+      font-size: 16.5px; 
       color: var(--primary); 
       letter-spacing: 0.3px;
-      line-height: 1.2;
+      line-height: 1.25;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
       width: 100%;
     }
 
+    .teacher-badge-container {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      margin-top: 2px;
+      white-space: nowrap;
+    }
+
     .teacher-badge {
-      font-size: 13px; 
+      font-size: 12px; 
       font-weight: 600;
-      color: #6c5ce7;
+      color: var(--primary);
       background: rgba(108, 92, 231, 0.12);
       padding: 1px 8px;
       border-radius: 12px;
-      margin-top: 2px;
       display: inline-flex;
       align-items: center;
-      gap: 5px;
+      gap: 4px;
       white-space: nowrap;
     }
+
+    .role-pill {
+      font-size: 10.5px;
+      font-weight: 700;
+      padding: 1px 7px;
+      border-radius: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+      color: white;
+    }
+    .role-admin { background: linear-gradient(135deg, #e056fd, #6c5ce7); }
+    .role-user { background: linear-gradient(135deg, #0984e3, #74b9ff); }
 
     .header-actions {
       display: flex;
@@ -165,7 +187,7 @@
       border: none;
       background: #ffffff;
       color: var(--primary);
-      font-size: 14px;
+      font-size: 13.5px;
       cursor: pointer;
       display: flex;
       align-items: center;
@@ -174,19 +196,20 @@
       transition: transform 0.15s, background-color 0.15s;
     }
     .header-btn:active { transform: scale(0.9); background: #f0f3ff; }
+    .header-btn.btn-admin { color: #e056fd; }
 
     select, option { font-family: 'Mali', cursive !important; }
 
     select#classSelect {
-      width: 100%; height: 50px; padding: 0 16px;
-      line-height: 50px; font-size: 16px; 
+      width: 100%; height: 48px; padding: 0 16px;
+      line-height: 48px; font-size: 15.5px; 
       border: 1.5px solid rgba(255, 255, 255, 0.9); 
-      border-radius: 20px;
+      border-radius: 18px;
       background: var(--input-bg);
       font-weight: 700; color: #444;
       outline: none; text-align: left; text-align-last: left;
       box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-      appearance: none; margin-bottom: 12px;
+      appearance: none; margin-bottom: 10px;
       cursor: pointer;
       background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236c5ce7' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
       background-repeat: no-repeat;
@@ -197,14 +220,14 @@
     /* --- Navigator --- */
     .nav-bar {
       display: flex; align-items: center; gap: 8px;
-      background: rgba(255,255,255,0.45); padding: 5px; border-radius: 25px;
-      margin-bottom: 12px; height: 80px; 
-      border: 1px solid rgba(255, 255, 255, 0.7);
+      background: rgba(255,255,255,0.5); padding: 5px; border-radius: 22px;
+      margin-bottom: 10px; height: 76px; 
+      border: 1px solid rgba(255, 255, 255, 0.75);
     }
 
     .nav-btn {
-      width: 44px; height: 44px; border-radius: 50%; border: none;
-      background: white; color: var(--primary); font-size: 18px;
+      width: 42px; height: 42px; border-radius: 50%; border: none;
+      background: white; color: var(--primary); font-size: 17px;
       cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.05);
       transition: 0.2s; flex-shrink: 0; 
       display: flex; align-items: center; justify-content: center;
@@ -223,8 +246,8 @@
       align-items: center; line-height: 1.2;
     }
 
-    .name-line-1 { font-family: 'Mali', cursive; font-weight: 700; font-size: 19px; color: #2d3436; white-space: nowrap; }
-    .name-line-2 { font-family: 'Mali', cursive; font-weight: 700; font-size: 19px; color: #2d3436; white-space: nowrap; margin-top: 3px; }
+    .name-line-1 { font-family: 'Mali', cursive; font-weight: 700; font-size: 18.5px; color: #2d3436; white-space: nowrap; }
+    .name-line-2 { font-family: 'Mali', cursive; font-weight: 700; font-size: 18.5px; color: #2d3436; white-space: nowrap; margin-top: 3px; }
 
     #studentNav {
       position: absolute; top: 0; left: 0; width: 100%; height: 100%;
@@ -234,12 +257,11 @@
     /* --- Total Score --- */
     .total-container {
       display: flex; justify-content: space-between; align-items: center;
-      padding: 0 12px; margin-bottom: 10px; color: #555;
-      background: rgba(255, 255, 255, 0.4);
+      padding: 6px 14px; margin-bottom: 8px; color: #555;
+      background: rgba(255, 255, 255, 0.45);
       border-radius: 16px;
-      padding: 6px 14px;
     }
-    .total-label { font-family: 'Mali', cursive; font-size: 15px; font-weight: 700; }
+    .total-label { font-family: 'Mali', cursive; font-size: 14.5px; font-weight: 700; }
     .total-value { font-family: 'Mali', cursive; font-size: 22px; font-weight: 700; color: var(--primary); }
     .total-max { font-size: 14px; opacity: 0.65; }
 
@@ -254,17 +276,17 @@
     
     .score-item {
       display: flex; justify-content: space-between; align-items: center;
-      background: rgba(255,255,255,0.7); margin-bottom: 9px; padding: 10px 14px;
+      background: rgba(255,255,255,0.72); margin-bottom: 8px; padding: 10px 14px;
       border-radius: 18px; transition: 0.2s;
-      border: 1px solid rgba(255, 255, 255, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.85);
     }
     .score-item:focus-within { background: white; transform: scale(1.015); box-shadow: 0 5px 15px rgba(108, 92, 231, 0.1); }
 
-    .score-label { font-size: 15.5px; font-weight: 600; color: #444; flex: 1; padding-right: 10px; }
+    .score-label { font-size: 15px; font-weight: 600; color: #444; flex: 1; padding-right: 10px; }
     
     .score-input {
-      width: 68px; height: 44px; text-align: center; font-size: 20px;
-      border: 1.5px solid transparent; border-radius: 14px; 
+      width: 68px; height: 42px; text-align: center; font-size: 20px;
+      border: 1.5px solid transparent; border-radius: 13px; 
       background: white; color: var(--primary); font-weight: 700; outline: none;
       font-family: 'Mali', cursive; box-shadow: inset 0 2px 5px rgba(0,0,0,0.04);
       transition: all 0.2s;
@@ -277,36 +299,55 @@
     }
     .score-input.low-score { color: #ff6b6b; background: #fff0f0; }
 
+    /* --- Action Buttons Grid --- */
+    .action-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .btn-secondary-action {
+      padding: 10px; border: none;
+      border-radius: 16px; background: rgba(255, 255, 255, 0.85);
+      color: var(--primary); font-family: 'Mali', cursive; font-weight: 700; 
+      cursor: pointer; font-size: 14px; box-shadow: 0 4px 12px rgba(108, 92, 231, 0.12);
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+      transition: transform 0.15s, background-color 0.15s;
+    }
+    .btn-secondary-action:active { transform: scale(0.96); background: white; }
+
     .btn-add {
-      margin-top: 10px; width: 100%; padding: 12px; border: none;
-      border-radius: 20px; background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+      grid-column: span 2;
+      padding: 11px; border: none;
+      border-radius: 18px; background: linear-gradient(135deg, #6c5ce7, #a29bfe);
       color: white; font-family: 'Mali', cursive; font-weight: 700; 
-      cursor: pointer; font-size: 16px; box-shadow: 0 8px 20px rgba(108, 92, 231, 0.3);
+      cursor: pointer; font-size: 15px; box-shadow: 0 8px 20px rgba(108, 92, 231, 0.28);
       display: flex; align-items: center; justify-content: center; gap: 8px;
       transition: transform 0.15s;
     }
     .btn-add:active { transform: scale(0.98); }
 
-    /* --- Status Toast (Save indicator) --- */
+    /* --- Status Toast (Subtle Save Badge) --- */
     #statusToast {
       position: absolute;
-      top: 18px;
+      top: 14px;
       left: 50%;
-      transform: translateX(-50%) translateY(-30px);
-      background: rgba(45, 52, 54, 0.92);
+      transform: translateX(-50%) translateY(-35px);
+      background: rgba(45, 52, 54, 0.94);
       color: #ffffff;
       padding: 6px 16px;
       border-radius: 20px;
-      font-size: 13.5px;
+      font-size: 13px;
       font-weight: 600;
-      z-index: 80;
+      z-index: 100;
       opacity: 0;
       pointer-events: none;
-      transition: all 0.25s ease;
+      transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
       display: flex;
       align-items: center;
       gap: 7px;
-      box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.18);
       white-space: nowrap;
     }
     #statusToast.visible {
@@ -323,11 +364,11 @@
       transition: opacity 0.2s ease;
     }
     .loading-text { 
-      margin-top: 14px; 
+      margin-top: 12px; 
       font-family: 'Mali', cursive; 
       color: var(--primary); 
       font-weight: 700; 
-      font-size: 15px;
+      font-size: 14.5px;
       text-align: center;
       padding: 0 20px;
     }
@@ -337,14 +378,14 @@
        ============================================================ */
     #pinOverlay {
       position: fixed; inset: 0; z-index: 9999;
-      background: linear-gradient(135deg, rgba(161, 196, 253, 0.95) 0%, rgba(194, 233, 251, 0.95) 100%);
+      background: linear-gradient(135deg, rgba(161, 196, 253, 0.96) 0%, rgba(194, 233, 251, 0.96) 100%);
       backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
       display: flex; flex-direction: column; align-items: center; justify-content: center;
       padding: 16px;
     }
     .pin-card {
-      background: rgba(255, 255, 255, 0.65);
-      border: 2px solid rgba(255, 255, 255, 0.85);
+      background: rgba(255, 255, 255, 0.7);
+      border: 2px solid rgba(255, 255, 255, 0.9);
       border-radius: 36px;
       box-shadow: 0 20px 45px rgba(108, 92, 231, 0.18);
       backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
@@ -373,7 +414,7 @@
     .pin-prompt {
       margin: 0 0 14px 0;
       color: var(--primary);
-      font-size: 14px;
+      font-size: 13.5px;
       font-weight: 600;
       min-height: 20px;
     }
@@ -406,7 +447,7 @@
       aspect-ratio: 1;
       border-radius: 50%;
       border: 1.5px solid rgba(255, 255, 255, 0.9);
-      background: rgba(255, 255, 255, 0.8);
+      background: rgba(255, 255, 255, 0.82);
       color: var(--text-color);
       font-size: 21px;
       font-weight: 700;
@@ -439,10 +480,121 @@
       animation: shakeAnimation 0.35s ease-in-out;
     }
 
+    /* ============================================================
+       MODAL DIALOGS (User Management & Add Student)
+       ============================================================ */
+    .modal-overlay {
+      position: fixed; inset: 0; z-index: 9000;
+      background: rgba(0, 0, 0, 0.45);
+      backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+      display: none; align-items: center; justify-content: center;
+      padding: 16px;
+    }
+    .modal-card {
+      background: #ffffff;
+      border-radius: 28px;
+      width: 100%; max-width: 420px;
+      max-height: 85vh;
+      display: flex; flex-direction: column;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.2);
+      overflow: hidden;
+      animation: modalFadeIn 0.25s ease;
+    }
+    @keyframes modalFadeIn {
+      from { opacity: 0; transform: scale(0.95); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    .modal-header {
+      padding: 18px 20px;
+      background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+      color: white;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .modal-header h3 { margin: 0; font-size: 17px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+    .modal-close-btn {
+      background: rgba(255,255,255,0.2); border: none; color: white;
+      width: 30px; height: 30px; border-radius: 50%; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; font-size: 14px;
+    }
+    .modal-body {
+      padding: 18px 20px;
+      overflow-y: auto;
+      flex: 1;
+    }
+    .modal-footer {
+      padding: 14px 20px;
+      background: #f8f9fa;
+      border-top: 1px solid #eee;
+      display: flex; justify-content: flex-end; gap: 10px;
+    }
+
+    /* Form Fields */
+    .form-group { margin-bottom: 14px; }
+    .form-group label { display: block; font-size: 13.5px; font-weight: 600; color: #444; margin-bottom: 5px; }
+    .form-control {
+      width: 100%; padding: 10px 14px; border-radius: 14px;
+      border: 1.5px solid #e2e8f0; font-family: 'Mali', cursive;
+      font-size: 14.5px; outline: none; transition: border-color 0.2s;
+    }
+    .form-control:focus { border-color: var(--primary); }
+
+    /* User List Table in Modal */
+    .user-list-item {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 12px; background: #f8faff; border-radius: 14px;
+      margin-bottom: 8px; border: 1px solid #edf2f7;
+    }
+    .user-info-text { flex: 1; min-width: 0; }
+    .user-info-name { font-weight: 700; font-size: 14px; color: #2d3436; }
+    .user-info-sub { font-size: 12px; color: #636e72; }
+
+    /* ============================================================
+       PRINT REPORT STYLING (100% Sarabun Font per Rule 4)
+       ============================================================ */
+    #printReportContainer {
+      display: none;
+    }
+    @media print {
+      body * { visibility: hidden !important; }
+      #printReportContainer, #printReportContainer * {
+        visibility: visible !important;
+        font-family: 'Sarabun', sans-serif !important;
+      }
+      #printReportContainer {
+        position: absolute;
+        left: 0; top: 0; width: 100%;
+        margin: 0; padding: 12mm 15mm;
+        background: #ffffff !important;
+        color: #000000 !important;
+        display: block !important;
+        z-index: 999999;
+      }
+      .no-print { display: none !important; }
+    }
+
+    .report-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+      font-size: 13px;
+    }
+    .report-table th, .report-table td {
+      border: 1px solid #333;
+      padding: 6px 8px;
+      text-align: center;
+    }
+    .report-table th {
+      background-color: #f2f2f2 !important;
+      font-weight: 600;
+    }
+    .report-table td.text-left {
+      text-align: left;
+    }
+
     /* --- Responsive Queries for Mobile Portrait Optimization --- */
     @media only screen and (max-width: 480px) {
       .app-card { 
-        padding: 16px; 
+        padding: 14px; 
         width: 96%; 
         height: 98dvh; 
         border-radius: 28px; 
@@ -452,43 +604,47 @@
       .header-bar {
         padding: 6px 10px;
         border-radius: 18px;
-        gap: 8px;
+        gap: 6px;
       }
       .header-logo { width: 32px; height: 32px; border-radius: 8px; }
-      h2 { font-size: 15px; white-space: nowrap; }
-      .teacher-badge { font-size: 11.5px; padding: 1px 6px; white-space: nowrap; }
-      .header-btn { width: 30px; height: 30px; font-size: 12.5px; }
+      h2 { font-size: 14px; white-space: nowrap; }
+      .teacher-badge { font-size: 11px; padding: 1px 6px; white-space: nowrap; }
+      .role-pill { font-size: 9.5px; padding: 1px 5px; }
+      .header-btn { width: 30px; height: 30px; font-size: 12px; }
 
       select#classSelect { 
-        font-size: 14.5px; 
-        height: 46px; 
-        line-height: 46px; 
+        font-size: 14px; 
+        height: 44px; 
+        line-height: 44px; 
         padding: 0 12px;
-        margin-bottom: 10px;
-        border-radius: 16px;
+        margin-bottom: 8px;
+        border-radius: 15px;
       }
-      .name-line-1, .name-line-2 { font-size: 17.5px; }
-      .nav-bar { height: 72px; margin-bottom: 10px; }
-      .nav-btn { width: 40px; height: 40px; font-size: 16px; }
-      .total-container { padding: 4px 10px; margin-bottom: 8px; }
-      .total-label { font-size: 13.5px; }
-      .total-value { font-size: 20px; }
-      .score-item { padding: 8px 12px; margin-bottom: 8px; border-radius: 15px; }
-      .score-label { font-size: 14.5px; }
-      .score-input { width: 62px; height: 40px; font-size: 18px; border-radius: 12px; }
-      .btn-add { padding: 11px; font-size: 15px; border-radius: 18px; }
+      .name-line-1, .name-line-2 { font-size: 17px; }
+      .nav-bar { height: 68px; margin-bottom: 8px; }
+      .nav-btn { width: 38px; height: 38px; font-size: 15px; }
+      .total-container { padding: 4px 10px; margin-bottom: 6px; }
+      .total-label { font-size: 13px; }
+      .total-value { font-size: 19px; }
+      .score-item { padding: 8px 12px; margin-bottom: 7px; border-radius: 14px; }
+      .score-label { font-size: 14px; }
+      .score-input { width: 62px; height: 38px; font-size: 18px; border-radius: 11px; }
+      
+      .action-grid { gap: 6px; margin-top: 6px; }
+      .btn-secondary-action { padding: 9px; font-size: 13px; border-radius: 14px; }
+      .btn-add { padding: 10px; font-size: 14.5px; border-radius: 16px; }
       
       .pin-card { padding: 20px 16px; max-width: 300px; border-radius: 28px; }
-      .pin-logo { width: 52px; height: 52px; }
-      .pin-title { font-size: 19px; }
-      .pin-key { font-size: 20px; }
+      .pin-logo { width: 50px; height: 50px; }
+      .pin-title { font-size: 18.5px; }
+      .pin-key { font-size: 19px; }
     }
   </style>
 </head>
 <body>
 
 <!-- ============================================================
-     PIN LOCK OVERLAY (ความปลอดภัยสำหรับครูผู้สอน)
+     PIN LOCK OVERLAY (รองรับทั้ง Admin และ User ตามตาราง Users)
      ============================================================ -->
 <div id="pinOverlay">
   <div class="pin-card" id="pinCard">
@@ -514,7 +670,7 @@
       <button type="button" class="pin-key" onclick="pressPin('7')">7</button>
       <button type="button" class="pin-key" onclick="pressPin('8')">8</button>
       <button type="button" class="pin-key" onclick="pressPin('9')">9</button>
-      <button type="button" class="pin-key pin-tool" onclick="promptChangePin()" title="ตั้งค่าระบบ / เปลี่ยนรหัส PIN"><i class="fas fa-cog"></i></button>
+      <button type="button" class="pin-key pin-tool" onclick="promptGasSettings()" title="ตั้งค่าระบบ"><i class="fas fa-cog"></i></button>
       <button type="button" class="pin-key" onclick="pressPin('0')">0</button>
       <button type="button" class="pin-key pin-tool" onclick="deletePin()" title="ลบตัวเลข"><i class="fas fa-backspace"></i></button>
     </div>
@@ -526,22 +682,32 @@
      ============================================================ -->
 <div class="app-card">
   
-  <!-- Mini Status Toast -->
+  <!-- Mini Status Toast (Non-intrusive Save & Status Badge) -->
   <div id="statusToast"><i class="fas fa-check-circle" style="color:var(--success)"></i> บันทึกข้อมูลสำเร็จ</div>
 
-  <!-- Header Bar -->
+  <!-- Responsive Header Bar (Single-line on mobile portrait) -->
   <div class="header">
     <div class="header-bar">
       <div class="header-brand">
         <img src="https://i.postimg.cc/bwLY28yb/gradebook.png" alt="Gradebook" class="header-logo">
         <div class="header-text">
-          <h2>คะแนนวิชาภาษาไทย</h2>
-          <span class="teacher-badge"><i class="fas fa-chalkboard-teacher"></i> ครูบอส</span>
+          <h2 id="appSubjectTitle">คะแนนวิชาภาษาไทย</h2>
+          <div class="teacher-badge-container">
+            <span class="teacher-badge" id="teacherBadge"><i class="fas fa-chalkboard-teacher"></i> ครูบอส</span>
+            <span class="role-pill role-admin" id="rolePill">Admin</span>
+          </div>
         </div>
       </div>
+      
       <div class="header-actions">
-        <button type="button" class="header-btn" onclick="fetchData()" title="รีเฟรชข้อมูลล่าสุด"><i class="fas fa-rotate" id="refreshBtnIcon"></i></button>
-        <button type="button" class="header-btn" onclick="lockApp()" title="ล็อคหน้าจอ"><i class="fas fa-lock"></i></button>
+        <!-- ปุ่มพิมพ์รายงานคะแนนห้องเรียน -->
+        <button type="button" class="header-btn" onclick="openPrintPreview()" title="พิมพ์คะแนนห้องเรียน (Sarabun)"><i class="fas fa-print"></i></button>
+        <!-- ปุ่มจัดการผู้ใช้ (เฉพาะ Admin) -->
+        <button type="button" class="header-btn btn-admin" id="adminUsersBtn" onclick="openUserManager()" title="จัดการผู้ใช้ (Admin)"><i class="fas fa-user-gear"></i></button>
+        <!-- ปุ่มรีเฟรชข้อมูลล่าสุด -->
+        <button type="button" class="header-btn" onclick="fetchData(true)" title="รีเฟรชข้อมูล"><i class="fas fa-rotate" id="refreshBtnIcon"></i></button>
+        <!-- ปุ่มล็อคหน้าจอ / สลับผู้ใช้ -->
+        <button type="button" class="header-btn" onclick="lockApp()" title="ล็อคหน้าจอ / สลับผู้ใช้"><i class="fas fa-lock"></i></button>
       </div>
     </div>
   </div>
@@ -579,40 +745,194 @@
 
   <!-- Score Items List -->
   <div id="scoreContainer" class="score-list">
-    <div style="text-align:center; margin-top:60px; color:rgba(0,0,0,0.35);">
+    <div style="text-align:center; margin-top:55px; color:rgba(0,0,0,0.35);">
       <i class="fas fa-folder-open fa-3x"></i>
       <br><br>
       <span style="font-family:'Mali'">เลือกห้องเรียนเพื่อเริ่มงาน</span>
     </div>
   </div>
 
-  <!-- Add Score Topic Button -->
-  <button type="button" class="btn-add" onclick="addTopic()">
-    <i class="fas fa-plus-circle"></i> เพิ่มช่องคะแนน
-  </button>
+  <!-- Action Buttons (Grid) -->
+  <div class="action-grid">
+    <button type="button" class="btn-secondary-action" onclick="openAddStudentModal()">
+      <i class="fas fa-user-plus"></i> เพิ่มนักเรียน
+    </button>
+    <button type="button" class="btn-secondary-action" onclick="addTopic()">
+      <i class="fas fa-plus-circle"></i> เพิ่มช่องคะแนน
+    </button>
+  </div>
 
-  <!-- Smooth Loading Overlay -->
+  <!-- Smooth Background Loading Indicator -->
   <div id="loader">
     <i class="fas fa-circle-notch fa-spin fa-3x" style="color:var(--primary)"></i>
-    <div class="loading-text" id="loaderText">กำลังโหลดข้อมูล...</div>
+    <div class="loading-text" id="loaderText">กำลังซิงค์ข้อมูลเบื้องหลัง...</div>
+  </div>
+</div>
+
+<!-- ============================================================
+     MODAL 1: ADD STUDENT DIALOG (ทั้ง Admin & User)
+     ============================================================ -->
+<div class="modal-overlay" id="addStudentModal">
+  <div class="modal-card">
+    <div class="modal-header">
+      <h3><i class="fas fa-user-plus"></i> เพิ่มนักเรียนใหม่</h3>
+      <button type="button" class="modal-close-btn" onclick="closeModal('addStudentModal')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>ห้องเรียนปัจจุบัน</label>
+        <input type="text" class="form-control" id="modalStudentClassName" readonly style="background:#f1f2f6; font-weight:700;">
+      </div>
+      <div class="form-group">
+        <label>เลขที่</label>
+        <input type="number" class="form-control" id="newStudentNo" placeholder="ระบุเลขที่ เช่น 1, 2" min="1">
+      </div>
+      <div class="form-group">
+        <label>ชื่อ - นามสกุล นักเรียน</label>
+        <input type="text" class="form-control" id="newStudentName" placeholder="เช่น ด.ช. รักดี ใฝ่เรียน">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn-secondary-action" onclick="closeModal('addStudentModal')" style="box-shadow:none;">ยกเลิก</button>
+      <button type="button" class="btn-secondary-action" style="background:var(--primary); color:white;" onclick="submitNewStudent()">บันทึกนักเรียน</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     MODAL 2: USER MANAGEMENT (ADMIN ONLY)
+     ============================================================ -->
+<div class="modal-overlay" id="userManagerModal">
+  <div class="modal-card" style="max-width: 460px;">
+    <div class="modal-header">
+      <h3><i class="fas fa-users-gear"></i> จัดการผู้ใช้ (Admin)</h3>
+      <button type="button" class="modal-close-btn" onclick="closeModal('userManagerModal')">&times;</button>
+    </div>
+    <div class="modal-body">
+      
+      <!-- รายชื่อผู้ใช้ปัจจุบัน -->
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+        <span style="font-weight:700; font-size:14px; color:#2d3436;">รายชื่อผู้ใช้ในระบบ</span>
+        <button type="button" class="btn-secondary-action" style="padding:4px 10px; font-size:12px;" onclick="showAddUserForm()">+ เพิ่มผู้ใช้ใหม่</button>
+      </div>
+      
+      <div id="usersListContainer" style="max-height: 180px; overflow-y: auto; margin-bottom: 16px;">
+        <!-- รายการผู้ใช้จะเรนเดอร์ตรงนี้ -->
+      </div>
+
+      <!-- ฟอร์มเพิ่ม/แก้ไขผู้ใช้ -->
+      <div id="userFormSection" style="background:#f8faff; padding:12px; border-radius:16px; border:1px solid #edf2f7; display:none;">
+        <h4 id="userFormTitle" style="margin:0 0 10px 0; font-size:14px; color:var(--primary);">เพิ่มผู้ใช้ใหม่</h4>
+        <input type="hidden" id="editUserRow">
+        <div class="form-group">
+          <label>รหัสผู้ใช้ (User ID)</label>
+          <input type="text" class="form-control" id="formUserId" placeholder="เช่น TCH02, ADM02">
+        </div>
+        <div class="form-group">
+          <label>ชื่อ - สกุล</label>
+          <input type="text" class="form-control" id="formUserName" placeholder="เช่น ครูสมศรี มณีฉาย">
+        </div>
+        <div class="form-group">
+          <label>รายวิชาที่สอน</label>
+          <input type="text" class="form-control" id="formUserSubject" placeholder="เช่น ภาษาอังกฤษ, วิทยาศาสตร์">
+        </div>
+        <div class="form-group">
+          <label>รหัส PIN (4 หลัก)</label>
+          <input type="tel" class="form-control" id="formUserPin" maxlength="4" placeholder="ตัวเลข 4 หลัก เช่น 5678">
+        </div>
+        <div class="form-group">
+          <label>สิทธิ์การใช้งาน (Role)</label>
+          <select class="form-control" id="formUserRole">
+            <option value="user">User (ครูผู้สอน - บันทึกคะแนน, เพิ่มนักเรียน, เพิ่มช่องคะแนน)</option>
+            <option value="admin">Admin (ผู้ดูแลระบบ - จัดการผู้ใช้, สร้างห้องเรียน, ทุกฟังก์ชัน)</option>
+          </select>
+        </div>
+        <div style="display:flex; justify-content:flex-end; gap:8px;">
+          <button type="button" class="btn-secondary-action" style="padding:6px 12px; font-size:12.5px;" onclick="hideUserForm()">ยกเลิก</button>
+          <button type="button" class="btn-secondary-action" style="padding:6px 14px; font-size:12.5px; background:var(--primary); color:white;" onclick="saveUserFromForm()">บันทึกผู้ใช้</button>
+        </div>
+      </div>
+
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn-secondary-action" onclick="closeModal('userManagerModal')">ปิดหน้าต่าง</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     PRINT REPORT CONTAINER (100% SARABUN FONT PER RULE 4)
+     ============================================================ -->
+<div id="printReportContainer">
+  <div style="text-align: center; margin-bottom: 20px;">
+    <h2 style="font-family:'Sarabun', sans-serif !important; font-size: 20px; font-weight: 700; margin: 0 0 6px 0; color:#000;">
+      แบบรายงานสรุปผลการบันทึกคะแนนเก็บและประเมินผลการเรียน
+    </h2>
+    <h3 style="font-family:'Sarabun', sans-serif !important; font-size: 16px; font-weight: 500; margin: 0 0 10px 0; color:#333;" id="printReportSubtitle">
+      รายวิชา... ชั้น... ภาคเรียนที่...
+    </h3>
+    <div style="font-family:'Sarabun', sans-serif !important; font-size: 14px; color:#444;" id="printReportMeta">
+      ครูผู้สอน: ครูบอส | วันที่ออกรายงาน: 24/11/2569
+    </div>
+  </div>
+
+  <table class="report-table" id="printReportTable">
+    <thead>
+      <tr id="printReportHeaderRow">
+        <th style="width: 45px;">ที่</th>
+        <th style="width: 70px;">เลขที่</th>
+        <th class="text-left" style="min-width: 170px;">ชื่อ - สกุล</th>
+        <!-- Dynamic Header Columns -->
+        <th style="width: 80px;">รวม</th>
+        <th style="width: 70px;">ร้อยละ</th>
+        <th style="width: 80px;">ผลการประเมิน</th>
+      </tr>
+    </thead>
+    <tbody id="printReportBody">
+      <!-- Dynamic Student Rows -->
+    </tbody>
+  </table>
+
+  <!-- Signature Block -->
+  <div style="margin-top: 45px; display: flex; justify-content: space-between; page-break-inside: avoid; font-family:'Sarabun', sans-serif !important; font-size: 13.5px;">
+    <div style="text-align: center; width: 45%;">
+      <p style="margin-bottom: 50px;">ลงชื่อ............................................................ครูผู้สอน</p>
+      <p style="margin: 0;" id="printTeacherSignName">( ครูบอส )</p>
+      <p style="margin: 4px 0 0 0;">ครูประจำวิชา</p>
+    </div>
+    <div style="text-align: center; width: 45%;">
+      <p style="margin-bottom: 50px;">ลงชื่อ............................................................ผู้รับรอง</p>
+      <p style="margin: 0;">( ............................................................ )</p>
+      <p style="margin: 4px 0 0 0;">หัวหน้าฝ่ายวิชาการ / นายทะเบียน</p>
+    </div>
   </div>
 </div>
 
 <script>
   /**
    * ============================================================
-   * 1. GAS API Bridge (Dual Mode: Apps Script & GitHub Pages)
+   * 1. APP STATE & LOCAL CACHE
    * ============================================================
    */
-  const DEFAULT_GAS_URL = "";
   const GAS_URL_KEY = "gradebook_gas_url";
+  const SESSION_USER_KEY = "gradebook_active_user_v2";
+  const CACHE_KEY = "gradebook_data_cache_v2";
 
-  function getGasUrl() {
-    return localStorage.getItem(GAS_URL_KEY) || DEFAULT_GAS_URL;
-  }
+  let currentUser = null; // { userId, name, subject, role }
+  let cachedData = null;  // { students: [], headers: [] }
+  let classList = [];
+  let currentIndex = 0;
+  let lastFocusedIndex = null;
+  let toastTimer = null;
+  let currentEnteredPin = "";
 
-  // จำลองข้อมูลตัวอย่างเมื่อเปิดบน GitHub Pages โดยยังไม่ได้เชื่อมโยง Google Apps Script
+  // Mock Store จำลองข้อมูลบน GitHub Pages (พร้อมระบบ Users แบบครบวงจร)
   let mockStore = {
+    users: [
+      { row: 2, userId: "ADM01", name: "ครูบอส", subject: "ภาษาไทย", pin: "8055", role: "admin" },
+      { row: 3, userId: "TCH01", name: "ครูสมหมาย มีสุข", subject: "คณิตศาสตร์", pin: "1234", role: "user" },
+      { row: 4, userId: "TCH02", name: "ครูมานี มีตา", subject: "ภาษาอังกฤษ", pin: "9999", role: "user" }
+    ],
     classes: ["ป.5/1", "ป.5/2", "ป.6/1"],
     data: {
       "ป.5/1": {
@@ -652,10 +972,45 @@
     }
   };
 
+  function getGasUrl() {
+    return localStorage.getItem(GAS_URL_KEY) || "";
+  }
+
+  /**
+   * ============================================================
+   * 2. GAS API PROXY & BRIDGE
+   * ============================================================
+   */
   function handleMockCall(prop, args, successFn, failureFn) {
     setTimeout(() => {
       try {
-        if (prop === "getAllClassNames") {
+        if (prop === "loginUserByPin") {
+          const pin = String(args[0]).trim();
+          const user = mockStore.users.find(u => u.pin === pin);
+          if (user) {
+            successFn({ success: true, user: { userId: user.userId, name: user.name, subject: user.subject, role: user.role } });
+          } else if (pin === "8055") {
+            successFn({ success: true, user: { userId: "ADM01", name: "ครูบอส", subject: "ภาษาไทย", role: "admin" } });
+          } else {
+            successFn({ success: false, message: "รหัส PIN ไม่ถูกต้อง" });
+          }
+        } else if (prop === "getUsers") {
+          successFn([...mockStore.users]);
+        } else if (prop === "saveUser") {
+          const uData = args[0];
+          const idx = mockStore.users.findIndex(u => u.userId === uData.userId);
+          if (idx >= 0) {
+            mockStore.users[idx] = { ...mockStore.users[idx], ...uData };
+          } else {
+            mockStore.users.push({ ...uData, row: mockStore.users.length + 2 });
+          }
+          successFn("Success");
+        } else if (prop === "deleteUser") {
+          const uId = args[0];
+          if (uId === "ADM01") return successFn("CannotDeleteMasterAdmin");
+          mockStore.users = mockStore.users.filter(u => u.userId !== uId);
+          successFn("Success");
+        } else if (prop === "getAllClassNames") {
           successFn([...mockStore.classes]);
         } else if (prop === "getClassData") {
           const cls = args[0];
@@ -665,9 +1020,7 @@
           if (mockStore.data[cls]) {
             const student = mockStore.data[cls].students.find(s => s.row === row);
             const header = mockStore.data[cls].headers.find(h => h.colIndex === colIndex);
-            if (student && header) {
-              student.scores[header.name] = val;
-            }
+            if (student && header) student.scores[header.name] = val;
           }
           successFn("Success");
         } else if (prop === "addHeader") {
@@ -678,6 +1031,19 @@
             if (match) max = parseInt(match[1]);
             const colIndex = mockStore.data[cls].headers.length + 2;
             mockStore.data[cls].headers.push({ name: headerName, colIndex: colIndex, max: max });
+          }
+          successFn("Success");
+        } else if (prop === "addStudent") {
+          const [cls, no, name] = args;
+          if (mockStore.data[cls]) {
+            const newRow = mockStore.data[cls].students.length + 2;
+            mockStore.data[cls].students.push({
+              row: newRow,
+              no: Number(no),
+              name: String(name).trim(),
+              scores: {}
+            });
+            mockStore.data[cls].students.sort((a, b) => a.no - b.no);
           }
           successFn("Success");
         } else if (prop === "createNewClass") {
@@ -699,12 +1065,10 @@
             successFn("Success");
           }
         } else {
-          failureFn(new Error("ฟังก์ชันไม่รองรับในระบบจำลอง"));
+          failureFn(new Error("ฟังก์ชันไม่รองรับ"));
         }
-      } catch(err) {
-        failureFn(err);
-      }
-    }, 150);
+      } catch(e) { failureFn(e); }
+    }, 120);
   }
 
   function createGasProxy(successFn, failureFn) {
@@ -714,12 +1078,8 @@
         console.warn("GAS Warning:", err);
         showLoader(false);
       },
-      withSuccessHandler: function(fn) {
-        return createGasProxy(fn, this.failureFn);
-      },
-      withFailureHandler: function(fn) {
-        return createGasProxy(this.successFn, fn);
-      }
+      withSuccessHandler: function(fn) { return createGasProxy(fn, this.failureFn); },
+      withFailureHandler: function(fn) { return createGasProxy(this.successFn, fn); }
     };
 
     return new Proxy(runner, {
@@ -736,15 +1096,10 @@
                 return res.json();
               })
               .then(data => {
-                if (data && data.error) {
-                  target.failureFn(new Error(data.error));
-                } else {
-                  target.successFn(data);
-                }
+                if (data && data.error) target.failureFn(new Error(data.error));
+                else target.successFn(data);
               })
-              .catch(err => {
-                target.failureFn(err);
-              });
+              .catch(err => target.failureFn(err));
           } else {
             handleMockCall(prop, args, target.successFn, target.failureFn);
           }
@@ -761,35 +1116,46 @@
 
   /**
    * ============================================================
-   * 2. PIN LOCK & AUTHENTICATION
+   * 3. INITIALIZATION & AUTHENTICATION
    * ============================================================
    */
-  const PIN_STORAGE_KEY = "gradebook_pin_v1";
-  const UNLOCKED_KEY = "gradebook_unlocked_session";
-  let currentEnteredPin = "";
+  window.onload = function() {
+    initSession();
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./sw.js').catch(() => {});
+    }
+  };
 
-  function getSavedPin() {
-    return localStorage.getItem(PIN_STORAGE_KEY) || "8055";
+  function initSession() {
+    const savedUser = sessionStorage.getItem(SESSION_USER_KEY);
+    if (savedUser) {
+      try {
+        currentUser = JSON.parse(savedUser);
+        applyUserUI();
+        document.getElementById('pinOverlay').style.display = 'none';
+        refreshClassList();
+        return;
+      } catch(e) {}
+    }
+    // หากยังไม่ล็อกอิน ให้แสดงหน้าจอ PIN
+    showPinOverlay();
   }
 
-  function checkLockState() {
-    if (sessionStorage.getItem(UNLOCKED_KEY) === 'true') {
-      document.getElementById('pinOverlay').style.display = 'none';
-    } else {
-      document.getElementById('pinOverlay').style.display = 'flex';
-      currentEnteredPin = "";
-      updatePinDots();
-      const msg = document.getElementById('pinMsg');
-      if (msg) {
-        msg.innerText = "กรุณากรอกรหัส PIN 4 หลัก";
-        msg.style.color = "var(--primary)";
-      }
+  function showPinOverlay() {
+    document.getElementById('pinOverlay').style.display = 'flex';
+    currentEnteredPin = "";
+    updatePinDots();
+    const msg = document.getElementById('pinMsg');
+    if (msg) {
+      msg.innerText = "กรุณากรอกรหัส PIN 4 หลัก";
+      msg.style.color = "var(--primary)";
     }
   }
 
   function lockApp() {
-    sessionStorage.removeItem(UNLOCKED_KEY);
-    checkLockState();
+    sessionStorage.removeItem(SESSION_USER_KEY);
+    currentUser = null;
+    showPinOverlay();
   }
 
   function pressPin(num) {
@@ -797,7 +1163,7 @@
       currentEnteredPin += num;
       updatePinDots();
       if (currentEnteredPin.length === 4) {
-        setTimeout(verifyPin, 120);
+        setTimeout(verifyEnteredPin, 120);
       }
     }
   }
@@ -813,98 +1179,122 @@
     for (let i = 0; i < 4; i++) {
       const dot = document.getElementById('dot-' + i);
       if (dot) {
-        if (i < currentEnteredPin.length) {
-          dot.classList.add('filled');
-        } else {
-          dot.classList.remove('filled');
-        }
+        if (i < currentEnteredPin.length) dot.classList.add('filled');
+        else dot.classList.remove('filled');
       }
     }
   }
 
-  function verifyPin() {
-    const correctPin = getSavedPin();
-    if (currentEnteredPin === correctPin) {
-      sessionStorage.setItem(UNLOCKED_KEY, 'true');
-      const pinOverlay = document.getElementById('pinOverlay');
-      pinOverlay.style.opacity = '0';
-      pinOverlay.style.transition = 'opacity 0.25s ease';
-      setTimeout(() => {
-        pinOverlay.style.display = 'none';
-        pinOverlay.style.opacity = '1';
-      }, 250);
+  function verifyEnteredPin() {
+    const pin = currentEnteredPin;
+    const msg = document.getElementById('pinMsg');
+    if (msg) msg.innerText = "กำลังตรวจสอบรหัส PIN...";
+
+    google.script.run
+      .withSuccessHandler(res => {
+        if (res && res.success) {
+          currentUser = res.user;
+          sessionStorage.setItem(SESSION_USER_KEY, JSON.stringify(currentUser));
+          
+          applyUserUI();
+
+          const pinOverlay = document.getElementById('pinOverlay');
+          pinOverlay.style.opacity = '0';
+          pinOverlay.style.transition = 'opacity 0.25s ease';
+          setTimeout(() => {
+            pinOverlay.style.display = 'none';
+            pinOverlay.style.opacity = '1';
+          }, 250);
+          
+          showStatusToast('success', `ยินดีต้อนรับ ${currentUser.name}`);
+          refreshClassList();
+        } else {
+          showPinError(res ? res.message : "รหัส PIN ไม่ถูกต้อง");
+        }
+      })
+      .withFailureHandler(err => {
+        showPinError("เชื่อมต่อระบบไม่สำเร็จ ลองอีกครั้ง");
+      })
+      .loginUserByPin(pin);
+  }
+
+  function showPinError(errorText) {
+    const pinCard = document.getElementById('pinCard');
+    const msg = document.getElementById('pinMsg');
+    if (pinCard) pinCard.classList.add('shake-error');
+    if (msg) {
+      msg.innerText = `❌ ${errorText}`;
+      msg.style.color = "#ff4757";
+    }
+    setTimeout(() => {
+      if (pinCard) pinCard.classList.remove('shake-error');
       currentEnteredPin = "";
-    } else {
-      const pinCard = document.getElementById('pinCard');
-      const msg = document.getElementById('pinMsg');
-      if (pinCard) pinCard.classList.add('shake-error');
+      updatePinDots();
       if (msg) {
-        msg.innerText = "❌ รหัส PIN ไม่ถูกต้อง";
-        msg.style.color = "#ff4757";
+        msg.innerText = "กรุณากรอกรหัส PIN 4 หลัก";
+        msg.style.color = "var(--primary)";
       }
-      setTimeout(() => {
-        if (pinCard) pinCard.classList.remove('shake-error');
-        currentEnteredPin = "";
-        updatePinDots();
-        if (msg) {
-          msg.innerText = "กรุณากรอกรหัส PIN 4 หลัก";
-          msg.style.color = "var(--primary)";
-        }
-      }, 1000);
+    }, 1200);
+  }
+
+  // อัปเดตส่วนหัวและสิทธิ์ตามข้อมูลผู้ใช้ (Rule 3 Compliant)
+  function applyUserUI() {
+    if (!currentUser) return;
+    
+    // อัปเดตชื่อวิชาและชื่อผู้ใช้
+    const titleEl = document.getElementById('appSubjectTitle');
+    if (titleEl) {
+      titleEl.innerText = currentUser.subject ? `คะแนนวิชา${currentUser.subject}` : "คะแนนวิชาภาษาไทย";
+    }
+    
+    const badgeEl = document.getElementById('teacherBadge');
+    if (badgeEl) {
+      badgeEl.innerHTML = `<i class="fas fa-chalkboard-teacher"></i> ${currentUser.name}`;
+    }
+
+    const roleEl = document.getElementById('rolePill');
+    if (roleEl) {
+      if (currentUser.role === 'admin') {
+        roleEl.innerText = "Admin";
+        roleEl.className = "role-pill role-admin";
+      } else {
+        roleEl.innerText = "ครูผู้สอน";
+        roleEl.className = "role-pill role-user";
+      }
+    }
+
+    // แสดง/ซ่อนปุ่มจัดการผู้ใช้เฉพาะ Admin
+    const adminBtn = document.getElementById('adminUsersBtn');
+    if (adminBtn) {
+      adminBtn.style.display = (currentUser.role === 'admin') ? 'flex' : 'none';
     }
   }
 
-  function promptChangePin() {
-    const choice = prompt("การตั้งค่าระบบ Gradebook:\n1. เปลี่ยนรหัส PIN\n2. ตั้งค่า Google Apps Script Web App URL\n\nพิมพ์ 1 หรือ 2 เพื่อดำเนินการ:");
-    if (choice === '1') {
-      const oldPin = prompt("กรุณาระบุรหัส PIN ปัจจุบัน:");
-      if (oldPin === getSavedPin()) {
-        const newPin = prompt("กรุณากำหนดรหัส PIN 4 หลักใหม่ (เฉพาะตัวเลข):");
-        if (newPin && newPin.length === 4 && /^\d+$/.test(newPin)) {
-          localStorage.setItem(PIN_STORAGE_KEY, newPin);
-          alert("✅ เปลี่ยนรหัส PIN สำเร็จเรียบร้อย!");
-        } else {
-          alert("⚠️ รหัส PIN ต้องเป็นตัวเลข 4 หลักเท่านั้น");
-        }
-      } else if (oldPin !== null) {
-        alert("❌ รหัส PIN ปัจจุบันไม่ถูกต้อง");
-      }
-    } else if (choice === '2') {
-      const currentUrl = localStorage.getItem(GAS_URL_KEY) || "";
-      const newUrl = prompt("ใส่ Google Apps Script Web App URL (ลงท้ายด้วย /exec):", currentUrl);
-      if (newUrl !== null) {
-        localStorage.setItem(GAS_URL_KEY, newUrl.trim());
-        alert("✅ บันทึก Google Apps Script URL เรียบร้อย ระบบจะโหลดข้อมูลใหม่");
-        location.reload();
-      }
+  function promptGasSettings() {
+    const currentUrl = localStorage.getItem(GAS_URL_KEY) || "";
+    const newUrl = prompt("ใส่ Google Apps Script Web App URL (ลงท้ายด้วย /exec):", currentUrl);
+    if (newUrl !== null) {
+      localStorage.setItem(GAS_URL_KEY, newUrl.trim());
+      alert("✅ บันทึก Web App URL เรียบร้อย ระบบจะเริ่มซิงค์ข้อมูลใหม่");
+      location.reload();
     }
   }
 
-  // รองรับการกดแป้นพิมพ์ตัวเลขบนคอมพิวเตอร์
+  // แป้นพิมพ์คอมพิวเตอร์
   window.addEventListener('keydown', function(e) {
     const pinOverlay = document.getElementById('pinOverlay');
     if (pinOverlay && pinOverlay.style.display !== 'none') {
-      if (e.key >= '0' && e.key <= '9') {
-        pressPin(e.key);
-      } else if (e.key === 'Backspace') {
-        deletePin();
-      } else if (e.key === 'Escape') {
-        currentEnteredPin = "";
-        updatePinDots();
-      }
+      if (e.key >= '0' && e.key <= '9') pressPin(e.key);
+      else if (e.key === 'Backspace') deletePin();
+      else if (e.key === 'Escape') { currentEnteredPin = ""; updatePinDots(); }
     }
   });
 
   /**
    * ============================================================
-   * 3. UI STATE, LOADING & STATUS TOAST
+   * 4. UI STATE, BACKGROUND LOADING & STATUS BADGE
    * ============================================================
    */
-  let cachedData = null;
-  let currentIndex = 0;
-  let lastFocusedIndex = null;
-  let toastTimer = null;
-
   function showLoader(show, text = "กำลังทำงาน...") {
     const loader = document.getElementById('loader');
     const loaderText = document.getElementById('loaderText');
@@ -934,60 +1324,54 @@
     if (status !== 'saving') {
       toastTimer = setTimeout(() => {
         toast.classList.remove('visible');
-      }, 1800);
+      }, 1900);
     }
   }
 
-  window.onload = function() {
-    checkLockState();
-    refreshClassList();
-    
-    // ลงทะเบียน Service Worker สำหรับ PWA
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('./sw.js').catch(() => {});
-    }
-  };
-
   /**
    * ============================================================
-   * 4. DATA LOGIC & RENDERING
+   * 5. DATA LOGIC & CLASSROOM WORKFLOW
    * ============================================================
    */
   function refreshClassList(selectClassName = null) {
-    showLoader(true, "กำลังโหลดรายชื่อห้องเรียน...");
+    const refreshBtnIcon = document.getElementById('refreshBtnIcon');
+    if (refreshBtnIcon) refreshBtnIcon.classList.add('fa-spin');
+    
     google.script.run
       .withSuccessHandler(names => {
+        classList = names || [];
         let select = document.getElementById('classSelect');
         select.innerHTML = '<option value="" disabled selected>เลือกห้องเรียน</option>';
-        if (names && names.length > 0) {
-          names.forEach(name => {
-            if(name !== "Config") { 
-              let opt = document.createElement('option');
-              opt.value = name; 
-              opt.text = formatClassName(name);
-              select.add(opt);
-            }
+        
+        if (classList.length > 0) {
+          classList.forEach(name => {
+            let opt = document.createElement('option');
+            opt.value = name; 
+            opt.text = formatClassName(name);
+            select.add(opt);
           });
         }
         
-        // เพิ่มตัวเลือกสร้างห้องเรียนใหม่
-        let newOpt = document.createElement('option');
-        newOpt.value = "__NEW_CLASS__";
-        newOpt.text = "➕ เพิ่มห้องเรียนใหม่...";
-        select.add(newOpt);
+        // เฉพาะ Admin เท่านั้นที่สามารถสร้างห้องเรียนใหม่ได้ (ตามข้อ 3 และ 4)
+        if (currentUser && currentUser.role === 'admin') {
+          let newOpt = document.createElement('option');
+          newOpt.value = "__NEW_CLASS__";
+          newOpt.text = "➕ เพิ่มห้องเรียนใหม่...";
+          select.add(newOpt);
+        }
 
-        showLoader(false);
+        if (refreshBtnIcon) refreshBtnIcon.classList.remove('fa-spin');
 
-        if (selectClassName) { 
+        if (selectClassName && classList.includes(selectClassName)) { 
           select.value = selectClassName; 
-          fetchData(); 
-        } else if (names && names.length > 0) {
-          select.value = names[0];
-          fetchData();
+          fetchData(false); 
+        } else if (classList.length > 0) {
+          select.value = classList[0];
+          fetchData(false);
         }
       })
       .withFailureHandler(err => {
-        showLoader(false);
+        if (refreshBtnIcon) refreshBtnIcon.classList.remove('fa-spin');
         console.error("Fetch classes error:", err);
       })
       .getAllClassNames();
@@ -1005,11 +1389,16 @@
       createNewClassPrompt();
       return;
     }
-    fetchData();
+    fetchData(true);
   }
 
   function createNewClassPrompt() {
-    let className = prompt("ระบุชื่อชั้นเรียนใหม่ (เช่น ป.5/3 หรือ ม.2/1):");
+    if (!currentUser || currentUser.role !== 'admin') {
+      alert("สงวนสิทธิ์การสร้างห้องเรียนเฉพาะผู้ดูแลระบบ (Admin) เท่านั้น");
+      refreshClassList();
+      return;
+    }
+    let className = prompt("ระบุชื่อชั้นเรียนใหม่ (เช่น ป.5/3 หรือ ม.1/2):");
     if (!className || !className.trim()) {
       refreshClassList();
       return;
@@ -1022,7 +1411,7 @@
           alert("ชื่อห้องเรียนนี้มีอยู่แล้วในระบบ");
           refreshClassList();
         } else {
-          alert("✅ สร้างห้องเรียน " + className.trim() + " สำเร็จ");
+          showStatusToast('success', `สร้างห้องเรียน ${className.trim()} เรียบร้อย`);
           refreshClassList(className.trim());
         }
       })
@@ -1034,13 +1423,13 @@
       .createNewClass(className.trim());
   }
 
-  function fetchData() {
+  function fetchData(showFeedback = true) {
     let cls = document.getElementById('classSelect').value;
     if (!cls || cls === "__NEW_CLASS__") return;
     
     const refreshBtnIcon = document.getElementById('refreshBtnIcon');
     if (refreshBtnIcon) refreshBtnIcon.classList.add('fa-spin');
-    showLoader(true, "กำลังดึงข้อมูลนักเรียนและคะแนน...");
+    if (showFeedback) showStatusToast('saving', 'กำลังซิงค์ข้อมูลล่าสุด...');
 
     google.script.run
       .withSuccessHandler(data => {
@@ -1049,13 +1438,12 @@
         lastFocusedIndex = null; 
         populateStudentDropdown();
         renderUI();
-        showLoader(false);
         if (refreshBtnIcon) refreshBtnIcon.classList.remove('fa-spin');
+        if (showFeedback) showStatusToast('success', 'ข้อมูลเป็นปัจจุบันแล้ว');
       })
       .withFailureHandler(err => {
-        showLoader(false);
         if (refreshBtnIcon) refreshBtnIcon.classList.remove('fa-spin');
-        console.error("Fetch data error:", err);
+        showStatusToast('error', 'ไม่สามารถเชื่อมต่อข้อมูลได้');
       })
       .getClassData(cls);
   }
@@ -1083,8 +1471,12 @@
 
   function renderUI() {
     if (!cachedData || !cachedData.students || cachedData.students.length === 0) {
-      document.getElementById('studentNameDisplay').innerHTML = '<div class="name-line-1">ไม่พบข้อมูลนักเรียน</div>';
-      document.getElementById('scoreContainer').innerHTML = '<div style="text-align:center; margin-top:50px; color:rgba(0,0,0,0.3);"><i class="fas fa-user-slash fa-2x"></i><br><br>ไม่มีรายชื่อนักเรียนในห้องนี้</div>';
+      document.getElementById('studentNameDisplay').innerHTML = '<div class="name-line-1">ยังไม่มีนักเรียนในห้องนี้</div>';
+      document.getElementById('scoreContainer').innerHTML = `
+        <div style="text-align:center; margin-top:45px; color:rgba(0,0,0,0.35);">
+          <i class="fas fa-user-plus fa-3x"></i><br><br>
+          <span style="font-family:'Mali'">กดปุ่ม "+ เพิ่มนักเรียน" ด้านล่างเพื่อเพิ่มนักเรียนคนแรก</span>
+        </div>`;
       document.getElementById('totalDisplay').innerText = "0";
       document.getElementById('maxTotalDisplay').innerText = "0";
       return;
@@ -1093,7 +1485,6 @@
     let student = cachedData.students[currentIndex];
     document.getElementById('studentNav').value = currentIndex;
     
-    // แยกชื่อ-นามสกุลเพื่อแสดงผลตรงกลาง
     let fullName = student.name.trim();
     let lastSpace = fullName.lastIndexOf(" ");
     let first = (lastSpace !== -1) ? fullName.substring(0, lastSpace) : fullName;
@@ -1133,11 +1524,8 @@
     if (e.key === 'Enter') {
       e.preventDefault();
       let next = document.getElementById(`input-${idx + 1}`);
-      if (next) {
-        next.focus();
-      } else {
-        document.getElementById(`input-${idx}`).blur();
-      }
+      if (next) next.focus();
+      else document.getElementById(`input-${idx}`).blur();
     }
   }
 
@@ -1151,11 +1539,8 @@
       el.value = ""; 
     }
     let numVal = parseInt(el.value);
-    if (!isNaN(numVal) && numVal < (max / 2)) {
-      el.classList.add("low-score");
-    } else {
-      el.classList.remove("low-score");
-    }
+    if (!isNaN(numVal) && numVal < (max / 2)) el.classList.add("low-score");
+    else el.classList.remove("low-score");
     
     if (cachedData && cachedData.students && cachedData.students[currentIndex]) {
       cachedData.students[currentIndex].scores[cachedData.headers[idx].name] = el.value;
@@ -1189,6 +1574,7 @@
     let cls = document.getElementById('classSelect').value;
     if (!cls || !cachedData || !cachedData.students || !cachedData.students[currentIndex]) return;
     
+    // บันทึกแบบซ่อนเบื้องหลัง พร้อม Status Toast
     showStatusToast('saving', 'กำลังบันทึกคะแนน...');
     
     google.script.run
@@ -1196,8 +1582,7 @@
         showStatusToast('success', 'บันทึกคะแนนเรียบร้อย');
       })
       .withFailureHandler(err => {
-        showStatusToast('error', 'บันทึกไม่สำเร็จ ลองอีกครั้ง');
-        console.error("Save score error:", err);
+        showStatusToast('error', 'บันทึกไม่สำเร็จ กรุณาลองใหม่');
       })
       .saveScore(cls, cachedData.students[currentIndex].row, colIndex, el.value);
   }
@@ -1213,17 +1598,287 @@
     if(!max || !max.trim()) return;
     
     let fullHeader = `${name.trim()} (${max.trim()})`;
-    showLoader(true, "กำลังเพิ่มช่องคะแนนใหม่...");
+    showStatusToast('saving', 'กำลังเพิ่มช่องคะแนน...');
     
     google.script.run
       .withSuccessHandler(() => {
-        fetchData();
+        fetchData(false);
+        showStatusToast('success', 'เพิ่มช่องคะแนนเรียบร้อย');
       })
       .withFailureHandler(err => {
-        showLoader(false);
-        alert("เกิดข้อผิดพลาดในการเพิ่มช่องคะแนน: " + err);
+        showStatusToast('error', 'เกิดข้อผิดพลาดในการเพิ่มช่องคะแนน');
       })
       .addHeader(cls, fullHeader);
+  }
+
+  /**
+   * ============================================================
+   * 6. ADD STUDENT WORKFLOW (ทั้ง Admin & User มีสิทธิ์ตามข้อ 4)
+   * ============================================================
+   */
+  function openAddStudentModal() {
+    let cls = document.getElementById('classSelect').value;
+    if (!cls || cls === "__NEW_CLASS__") return alert("กรุณาเลือกห้องเรียนก่อนเพิ่มนักเรียนครับ");
+    
+    document.getElementById('modalStudentClassName').value = formatClassName(cls);
+    
+    // คำนวณเลขที่ถัดไปอัตโนมัติ
+    let nextNo = 1;
+    if (cachedData && cachedData.students && cachedData.students.length > 0) {
+      nextNo = cachedData.students[cachedData.students.length - 1].no + 1;
+    }
+    document.getElementById('newStudentNo').value = nextNo;
+    document.getElementById('newStudentName').value = "";
+    
+    openModal('addStudentModal');
+  }
+
+  function submitNewStudent() {
+    let cls = document.getElementById('classSelect').value;
+    let no = document.getElementById('newStudentNo').value;
+    let name = document.getElementById('newStudentName').value;
+
+    if (!no || !name || !name.trim()) {
+      return alert("กรุณากรอกเลขที่และชื่อ-นามสกุลนักเรียนให้ครบถ้วน");
+    }
+
+    closeModal('addStudentModal');
+    showStatusToast('saving', 'กำลังบันทึกนักเรียนใหม่...');
+
+    google.script.run
+      .withSuccessHandler(() => {
+        fetchData(false);
+        showStatusToast('success', `เพิ่มนักเรียน ${name.trim()} สำเร็จ`);
+      })
+      .withFailureHandler(err => {
+        showStatusToast('error', 'เพิ่มนักเรียนไม่สำเร็จ');
+      })
+      .addStudent(cls, Number(no), name.trim());
+  }
+
+  /**
+   * ============================================================
+   * 7. ADMIN USER MANAGEMENT WORKFLOW (ข้อ 3)
+   * ============================================================
+   */
+  function openUserManager() {
+    if (!currentUser || currentUser.role !== 'admin') {
+      return alert("สงวนสิทธิ์เฉพาะผู้ดูแลระบบ (Admin) เท่านั้น");
+    }
+    hideUserForm();
+    loadUsersList();
+    openModal('userManagerModal');
+  }
+
+  function loadUsersList() {
+    const container = document.getElementById('usersListContainer');
+    container.innerHTML = '<div style="text-align:center; padding:15px; color:#888;"><i class="fas fa-spinner fa-spin"></i> กำลังโหลดรายชื่อผู้ใช้...</div>';
+
+    google.script.run
+      .withSuccessHandler(users => {
+        renderUsersList(users || []);
+      })
+      .withFailureHandler(err => {
+        container.innerHTML = '<div style="text-align:center; padding:15px; color:red;">ไม่สามารถโหลดข้อมูลผู้ใช้ได้</div>';
+      })
+      .getUsers();
+  }
+
+  function renderUsersList(users) {
+    const container = document.getElementById('usersListContainer');
+    if (!users || users.length === 0) {
+      container.innerHTML = '<div style="text-align:center; padding:15px; color:#999;">ยังไม่มีข้อมูลผู้ใช้ในระบบ</div>';
+      return;
+    }
+    let html = '';
+    users.forEach(u => {
+      const roleBadge = (u.role === 'admin') 
+        ? '<span class="role-pill role-admin" style="font-size:10px;">Admin</span>' 
+        : '<span class="role-pill role-user" style="font-size:10px;">User</span>';
+      
+      const delBtn = (u.userId !== 'ADM01') 
+        ? `<button type="button" class="btn-secondary-action" style="padding:4px 8px; color:red; box-shadow:none;" onclick="deleteUserPrompt('${u.userId}', '${u.name}')"><i class="fas fa-trash"></i></button>`
+        : '';
+
+      html += `
+        <div class="user-list-item">
+          <div class="user-info-text">
+            <div class="user-info-name">${u.name} ${roleBadge}</div>
+            <div class="user-info-sub">ID: ${u.userId} | วิชา: ${u.subject || '-'} | PIN: •••• (${u.pin})</div>
+          </div>
+          <div style="display:flex; gap:4px;">
+            <button type="button" class="btn-secondary-action" style="padding:4px 8px; box-shadow:none;" onclick='editUserPrompt(${JSON.stringify(u)})'><i class="fas fa-pen"></i></button>
+            ${delBtn}
+          </div>
+        </div>
+      `;
+    });
+    container.innerHTML = html;
+  }
+
+  function showAddUserForm() {
+    document.getElementById('userFormTitle').innerText = "เพิ่มผู้ใช้ใหม่";
+    document.getElementById('formUserId').value = "TCH" + Math.floor(100 + Math.random() * 900);
+    document.getElementById('formUserName').value = "";
+    document.getElementById('formUserSubject').value = "";
+    document.getElementById('formUserPin').value = "";
+    document.getElementById('formUserRole').value = "user";
+    document.getElementById('userFormSection').style.display = 'block';
+  }
+
+  function editUserPrompt(u) {
+    document.getElementById('userFormTitle').innerText = "แก้ไขข้อมูลผู้ใช้";
+    document.getElementById('formUserId').value = u.userId;
+    document.getElementById('formUserName').value = u.name;
+    document.getElementById('formUserSubject').value = u.subject;
+    document.getElementById('formUserPin').value = u.pin;
+    document.getElementById('formUserRole').value = u.role || 'user';
+    document.getElementById('userFormSection').style.display = 'block';
+  }
+
+  function hideUserForm() {
+    document.getElementById('userFormSection').style.display = 'none';
+  }
+
+  function saveUserFromForm() {
+    const userId = document.getElementById('formUserId').value.trim();
+    const name = document.getElementById('formUserName').value.trim();
+    const subject = document.getElementById('formUserSubject').value.trim();
+    const pin = document.getElementById('formUserPin').value.trim();
+    const role = document.getElementById('formUserRole').value;
+
+    if (!userId || !name || !pin || pin.length !== 4) {
+      return alert("กรุณาระบุข้อมูลให้ครบถ้วน และกำหนดรหัส PIN 4 หลัก");
+    }
+
+    const userData = { userId, name, subject, pin, role };
+    showStatusToast('saving', 'กำลังบันทึกข้อมูลผู้ใช้...');
+
+    google.script.run
+      .withSuccessHandler(() => {
+        showStatusToast('success', 'บันทึกผู้ใช้เรียบร้อย');
+        hideUserForm();
+        loadUsersList();
+      })
+      .withFailureHandler(err => {
+        showStatusToast('error', 'บันทึกผู้ใช้ไม่สำเร็จ');
+      })
+      .saveUser(userData);
+  }
+
+  function deleteUserPrompt(userId, name) {
+    if (!confirm(`ต้องการลบผู้ใช้ "${name}" (ID: ${userId}) ออกจากระบบหรือไม่?`)) return;
+    showStatusToast('saving', 'กำลังลบผู้ใช้...');
+    google.script.run
+      .withSuccessHandler(res => {
+        if (res === "CannotDeleteMasterAdmin") {
+          alert("ไม่สามารถลบผู้ดูแลระบบหลัก (ADM01) ได้");
+        } else {
+          showStatusToast('success', 'ลบผู้ใช้สำเร็จ');
+          loadUsersList();
+        }
+      })
+      .withFailureHandler(err => {
+        showStatusToast('error', 'เกิดข้อผิดพลาดในการลบผู้ใช้');
+      })
+      .deleteUser(userId);
+  }
+
+  /**
+   * ============================================================
+   * 8. PRINT SCORE REPORT (100% SARABUN FONT & THAI DATE BE)
+   * ============================================================
+   */
+  function getThaiDateBE() {
+    const now = new Date();
+    const d = String(now.getDate()).padStart(2, '0');
+    const m = String(now.getMonth() + 1).padStart(2, '0');
+    const yBE = now.getFullYear() + 543;
+    return `${d}/${m}/${yBE}`;
+  }
+
+  function openPrintPreview() {
+    let cls = document.getElementById('classSelect').value;
+    if (!cls || cls === "__NEW_CLASS__" || !cachedData || !cachedData.students || cachedData.students.length === 0) {
+      return alert("ไม่มีข้อมูลคะแนนของห้องเรียนที่เลือกสำหรับการพิมพ์รายงาน");
+    }
+
+    // เตรียมหัวรายงานภาษาไทยทางการ
+    const formattedClass = formatClassName(cls);
+    const subjectName = currentUser ? currentUser.subject : "ภาษาไทย";
+    const teacherName = currentUser ? currentUser.name : "ครูบอส";
+    const printDate = getThaiDateBE();
+
+    document.getElementById('printReportSubtitle').innerText = `รายวิชา${subjectName} ${formattedClass}`;
+    document.getElementById('printReportMeta').innerText = `ครูผู้สอน: ${teacherName} | วันที่ออกรายงาน: ${printDate} (พ.ศ.)`;
+    document.getElementById('printTeacherSignName').innerText = `( ${teacherName} )`;
+
+    // สร้าง Header Columns
+    const headerRow = document.getElementById('printReportHeaderRow');
+    let headerHtml = `
+      <th style="width: 45px;">ที่</th>
+      <th style="width: 65px;">เลขที่</th>
+      <th class="text-left" style="min-width: 170px;">ชื่อ - สกุล</th>
+    `;
+    let totalMaxScore = 0;
+    cachedData.headers.forEach(h => {
+      headerHtml += `<th style="width: 75px;">${h.name}</th>`;
+      totalMaxScore += h.max;
+    });
+    headerHtml += `
+      <th style="width: 75px;">รวม (${totalMaxScore})</th>
+      <th style="width: 65px;">ร้อยละ</th>
+      <th style="width: 80px;">ประเมิน</th>
+    `;
+    headerRow.innerHTML = headerHtml;
+
+    // สร้างข้อมูลนักเรียน
+    const body = document.getElementById('printReportBody');
+    let bodyHtml = '';
+    cachedData.students.forEach((s, idx) => {
+      let total = 0;
+      let scoreCols = '';
+      cachedData.headers.forEach(h => {
+        let val = parseInt(s.scores[h.name]);
+        if (!isNaN(val)) total += val;
+        scoreCols += `<td>${!isNaN(val) ? val : '-'}</td>`;
+      });
+      let percent = totalMaxScore > 0 ? ((total / totalMaxScore) * 100).toFixed(1) : "0.0";
+      let status = parseFloat(percent) >= 50 ? '<span style="color:green;">ผ่าน</span>' : '<span style="color:red;">ปรับปรุง</span>';
+
+      bodyHtml += `
+        <tr>
+          <td>${idx + 1}</td>
+          <td>${s.no}</td>
+          <td class="text-left">${s.name}</td>
+          ${scoreCols}
+          <td style="font-weight:600;">${total}</td>
+          <td>${percent}%</td>
+          <td>${status}</td>
+        </tr>
+      `;
+    });
+    body.innerHTML = bodyHtml;
+
+    // สั่งพิมพ์เอกสาร
+    setTimeout(() => {
+      window.print();
+    }, 150);
+  }
+
+  /**
+   * ============================================================
+   * 9. MODAL HELPERS
+   * ============================================================
+   */
+  function openModal(id) {
+    const el = document.getElementById(id);
+    if (el) el.style.display = 'flex';
+  }
+
+  function closeModal(id) {
+    const el = document.getElementById(id);
+    if (el) el.style.display = 'none';
   }
 </script>
 

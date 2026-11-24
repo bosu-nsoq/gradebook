@@ -1,9 +1,9 @@
 /**
  * ============================================================
  * แอปพลิเคชัน: Gradebook (ระบบบันทึกคะแนนนักเรียน)
- * พัฒนาสำหรับ: ครูบอส
+ * สำหรับ: ครูบอส และคณะครู
  * สภาพแวดล้อม: Google Apps Script + Google Sheets Web App
- * รองรับการใช้งาน: ทั้งใน Apps Script Web App และ GitHub Pages (Dual Mode)
+ * รองรับ: Role-based Access (Admin / User), PIN Login, การพิมพ์คะแนน
  * ============================================================
  */
 
@@ -68,20 +68,162 @@ function doPost(e) {
   }
 }
 
-// --- 1. ดึงรายชื่อชั้นเรียนทั้งหมด (Sheet ทั้งหมด) ---
+// ============================================================
+// 1. ระบบจัดการข้อมูลผู้ใช้งาน (Users Sheet & Authentication)
+// ============================================================
+
+function getOrCreateUsersSheet() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName("Users");
+  if (!sheet) {
+    sheet = ss.insertSheet("Users");
+    // หัวตารางข้อมูลผู้ใช้
+    sheet.appendRow(["UserID", "Name", "Subject", "PIN", "Role", "CreatedAt"]);
+    // ข้อมูลเริ่มต้น: ครูบอส (Admin) และผู้ใช้ตัวอย่าง (User)
+    sheet.appendRow(["ADM01", "ครูบอส", "ภาษาไทย", "8055", "admin", new Date()]);
+    sheet.appendRow(["TCH01", "ครูสมหมาย มีสุข", "คณิตศาสตร์", "1234", "user", new Date()]);
+    
+    // จัดรูปแบบหัวตาราง
+    var headerRange = sheet.getRange(1, 1, 1, 6);
+    headerRange.setFontWeight("bold")
+      .setBackground("#6c5ce7")
+      .setFontColor("#ffffff")
+      .setHorizontalAlignment("center");
+  }
+  return sheet;
+}
+
+// ตรวจสอบการเข้าสู่ระบบด้วย PIN
+function loginUserByPin(pin) {
+  var sheet = getOrCreateUsersSheet();
+  var data = sheet.getDataRange().getValues();
+  var cleanPin = String(pin).trim();
+
+  // ตรวจสอบผู้ใช้ในตาราง (ข้ามแถวที่ 1 ซึ่งเป็น Header)
+  for (var i = 1; i < data.length; i++) {
+    var row = data[i];
+    var userPin = String(row[3]).trim();
+    if (userPin === cleanPin) {
+      return {
+        success: true,
+        user: {
+          userId: String(row[0]),
+          name: String(row[1]),
+          subject: String(row[2]),
+          role: String(row[4]).toLowerCase() // 'admin' หรือ 'user'
+        }
+      };
+    }
+  }
+
+  // รองรับกรณีฉุกเฉิน: หากไม่มีข้อมูลแต่ใส่ 8055 ให้สิทธิ์ Admin ครูบอส
+  if (cleanPin === "8055") {
+    return {
+      success: true,
+      user: {
+        userId: "ADM01",
+        name: "ครูบอส",
+        subject: "ภาษาไทย",
+        role: "admin"
+      }
+    };
+  }
+
+  return { success: false, message: "รหัส PIN ไม่ถูกต้อง" };
+}
+
+// ดึงรายชื่อผู้ใช้ทั้งหมด (สำหรับโหมด Admin)
+function getUsers() {
+  var sheet = getOrCreateUsersSheet();
+  var data = sheet.getDataRange().getValues();
+  var users = [];
+
+  for (var i = 1; i < data.length; i++) {
+    var row = data[i];
+    if (!row[0] && !row[1]) continue;
+    users.push({
+      row: i + 1,
+      userId: String(row[0]),
+      name: String(row[1]),
+      subject: String(row[2]),
+      pin: String(row[3]),
+      role: String(row[4] || 'user').toLowerCase()
+    });
+  }
+  return users;
+}
+
+// บันทึก/แก้ไขข้อมูลผู้ใช้ (สำหรับโหมด Admin)
+function saveUser(userData) {
+  var sheet = getOrCreateUsersSheet();
+  var data = sheet.getDataRange().getValues();
+  var userId = String(userData.userId).trim();
+  var rowIndex = -1;
+
+  for (var i = 1; i < data.length; i++) {
+    if (String(data[i][0]).trim() === userId) {
+      rowIndex = i + 1;
+      break;
+    }
+  }
+
+  if (rowIndex > 0) {
+    // แก้ไขข้อมูลเดิม
+    sheet.getRange(rowIndex, 2).setValue(userData.name);
+    sheet.getRange(rowIndex, 3).setValue(userData.subject);
+    sheet.getRange(rowIndex, 4).setValue(String(userData.pin));
+    sheet.getRange(rowIndex, 5).setValue(userData.role || "user");
+  } else {
+    // เพิ่มผู้ใช้ใหม่
+    sheet.appendRow([
+      userId,
+      userData.name,
+      userData.subject,
+      String(userData.pin),
+      userData.role || "user",
+      new Date()
+    ]);
+  }
+  return "Success";
+}
+
+// ลบผู้ใช้ (สำหรับโหมด Admin)
+function deleteUser(userId) {
+  var sheet = getOrCreateUsersSheet();
+  var data = sheet.getDataRange().getValues();
+  var cleanId = String(userId).trim();
+
+  // ป้องกันการลบ Admin หลัก (ADM01)
+  if (cleanId === "ADM01") return "CannotDeleteMasterAdmin";
+
+  for (var i = 1; i < data.length; i++) {
+    if (String(data[i][0]).trim() === cleanId) {
+      sheet.deleteRow(i + 1);
+      return "Success";
+    }
+  }
+  return "NotFound";
+}
+
+// ============================================================
+// 2. ระบบจัดการห้องเรียนและคะแนน (Classrooms & Scores)
+// ============================================================
+
+// ดึงรายชื่อชั้นเรียนทั้งหมด (ยกเว้นชีตระบบ)
 function getAllClassNames() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var sheets = ss.getSheets();
-  // ดึงชื่อ Sheet ทุกอันออกมา (ไม่รวม sheet Config หากมี)
+  var systemSheets = ["Config", "Users", "System", "Settings", "Log"];
+  
   var names = sheets.map(function(sheet) {
     return sheet.getName();
   }).filter(function(name) {
-    return name !== "Config";
+    return systemSheets.indexOf(name) === -1;
   });
   return names;
 }
 
-// --- 2. สร้างชั้นเรียนใหม่ ---
+// สร้างชั้นเรียนใหม่
 function createNewClass(className) {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   if (ss.getSheetByName(className)) return "Duplicate"; // ชื่อซ้ำ
@@ -96,23 +238,23 @@ function createNewClass(className) {
   return "Success";
 }
 
-// --- 3. ดึงข้อมูลนักเรียนและคะแนน ---
+// ดึงข้อมูลนักเรียนและคะแนนของห้องเรียน
 function getClassData(className) {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var sheet = ss.getSheetByName(className);
   if (!sheet) return null;
 
   var data = sheet.getDataRange().getValues();
-  if (data.length < 2) return null;
+  if (data.length < 2) return { headers: [], students: [] };
 
   // อ่าน Header (เริ่ม Col C = index 2)
   var headers = [];
   for (var i = 2; i < data[0].length; i++) {
     var h = data[0][i];
     var max = 100;
-    var match = h.match(/\((\d+)\)/);
+    var match = String(h).match(/\((\d+)\)/);
     if (match) max = parseInt(match[1]);
-    headers.push({ name: h, colIndex: i, max: max });
+    headers.push({ name: String(h), colIndex: i, max: max });
   }
 
   // อ่าน Students
@@ -120,7 +262,7 @@ function getClassData(className) {
   for (var i = 1; i < data.length; i++) {
     var row = data[i];
     // ข้ามแถวที่ไม่มีชื่อหรือเลขที่
-    if(row[0] === "" || row[1] === "") continue;
+    if (row[0] === "" || row[1] === "") continue;
 
     var scores = {};
     headers.forEach(function(h) {
@@ -143,7 +285,7 @@ function getClassData(className) {
   return { headers: headers, students: students };
 }
 
-// --- 4. บันทึกคะแนน ---
+// บันทึกคะแนน
 function saveScore(className, row, colIndex, value) {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var sheet = ss.getSheetByName(className);
@@ -152,11 +294,54 @@ function saveScore(className, row, colIndex, value) {
   return "Success";
 }
 
-// --- 5. เพิ่มช่องคะแนนใหม่ ---
+// เพิ่มช่องคะแนนใหม่
 function addHeader(className, headerName) {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var sheet = ss.getSheetByName(className);
   if (!sheet) return "SheetNotFound";
   sheet.getRange(1, sheet.getLastColumn() + 1).setValue(headerName);
   return "Success";
+}
+
+// เพิ่มนักเรียนใหม่เข้าห้องเรียน
+function addStudent(className, no, name) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName(className);
+  if (!sheet) return "SheetNotFound";
+
+  var lastCol = sheet.getLastColumn();
+  if (lastCol < 2) lastCol = 4;
+  
+  var newRow = new Array(lastCol).fill("");
+  newRow[0] = Number(no);
+  newRow[1] = String(name).trim();
+
+  sheet.appendRow(newRow);
+  return "Success";
+}
+
+// ดึงข้อมูลภาพรวมเริ่มต้นแบบรวมศูนย์ (One-shot Background Sync)
+function getInitialAppData(pin) {
+  var auth = loginUserByPin(pin);
+  if (!auth.success) return { success: false, message: auth.message };
+
+  var classNames = getAllClassNames();
+  var currentClassData = null;
+  if (classNames.length > 0) {
+    currentClassData = getClassData(classNames[0]);
+  }
+
+  var users = [];
+  if (auth.user.role === 'admin') {
+    users = getUsers();
+  }
+
+  return {
+    success: true,
+    user: auth.user,
+    classNames: classNames,
+    firstClass: classNames.length > 0 ? classNames[0] : "",
+    currentClassData: currentClassData,
+    users: users
+  };
 }
