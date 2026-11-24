@@ -149,21 +149,36 @@
     }
 
     /* ============================================================
-       แถบเลือกชั้นเรียน & ปุ่ม "เพิ่มนักเรียน" เด่นชัด
+       แถบเลือกชั้นเรียน, ปุ่มลบชั้นเรียน & ปุ่มเพิ่มนักเรียนเด่นชัด
        ============================================================ */
     .class-action-bar {
       display: flex; gap: 8px; align-items: center; margin-bottom: 10px;
     }
     select#classSelect {
-      flex: 1; height: 46px; padding: 0 14px;
+      flex: 1; height: 46px; line-height: 46px; padding: 0 38px 0 14px;
       font-family: 'Mali', cursive !important;
       font-size: 15px; font-weight: 700; color: #333;
       border: 1.5px solid rgba(255, 255, 255, 0.95);
       border-radius: 16px; background: white;
       outline: none; box-shadow: 0 3px 10px rgba(0,0,0,0.04);
-      appearance: none; cursor: pointer;
+      -webkit-appearance: none; -moz-appearance: none; appearance: none;
+      cursor: pointer; text-overflow: ellipsis; white-space: nowrap; overflow: hidden;
       background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236c5ce7' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
       background-repeat: no-repeat; background-position: right 14px center; background-size: 14px;
+    }
+    .btn-action-icon {
+      width: 44px; height: 46px; border-radius: 16px; border: 1.5px solid transparent;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 15px; cursor: pointer; flex-shrink: 0; transition: transform 0.15s, background-color 0.15s;
+    }
+    .btn-action-icon:active { transform: scale(0.92); }
+    .btn-delete-class {
+      background: rgba(255, 235, 235, 0.9); color: #d63031;
+      border-color: rgba(255, 118, 117, 0.45);
+      box-shadow: 0 3px 10px rgba(214, 48, 49, 0.08);
+    }
+    .btn-delete-class:hover {
+      background: #ffe3e3;
     }
     .btn-quick-student {
       height: 46px; padding: 0 14px; border: none; border-radius: 16px;
@@ -573,11 +588,14 @@
     </div>
   </div>
 
-  <!-- แถบเลือกชั้นเรียน & ปุ่มเพิ่มนักเรียนเด่นชัด (ข้อ 4) -->
+  <!-- แถบเลือกชั้นเรียน, ปุ่มลบชั้นเรียน (Admin) & ปุ่มเพิ่มนักเรียนเด่นชัด (ข้อ 1, 2) -->
   <div class="class-action-bar">
     <select id="classSelect" onchange="onClassSelectChange()">
       <option value="" disabled selected>กำลังโหลดชั้นเรียน...</option>
     </select>
+    <button type="button" class="btn-action-icon btn-delete-class" id="deleteClassBtn" onclick="confirmDeleteCurrentClass()" title="ลบชั้นเรียนนี้ (Admin)">
+      <i class="fas fa-trash-alt"></i>
+    </button>
     <button type="button" class="btn-quick-student" onclick="openAddStudentModal()" title="เพิ่มรายชื่อนักเรียน">
       <i class="fas fa-user-plus"></i> เพิ่มนักเรียน
     </button>
@@ -849,6 +867,25 @@
     }
   };
 
+  const MOCK_STORAGE_KEY = "gradebook_mock_store_v3";
+  function saveMockStore() {
+    try {
+      localStorage.setItem(MOCK_STORAGE_KEY, JSON.stringify(mockStore));
+    } catch(e) {}
+  }
+  function loadMockStore() {
+    try {
+      const saved = localStorage.getItem(MOCK_STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed && parsed.students && parsed.students.length > 0) {
+          mockStore = parsed;
+        }
+      }
+    } catch(e) {}
+  }
+  loadMockStore();
+
   const DEFAULT_GAS_URL = "";
 
   function getGasUrl() {
@@ -927,11 +964,13 @@
           const idx = mockStore.users.findIndex(u => u.userId === uData.userId);
           if (idx >= 0) mockStore.users[idx] = { ...mockStore.users[idx], ...uData };
           else mockStore.users.push({ ...uData, row: mockStore.users.length + 2 });
+          saveMockStore();
           successFn("Success");
         } else if (prop === "deleteUser") {
           const uId = args[0];
           if (uId === "ADM01") return successFn("CannotDeleteMasterAdmin");
           mockStore.users = mockStore.users.filter(u => u.userId !== uId);
+          saveMockStore();
           successFn("Success");
         } else if (prop === "getAllClassNames") {
           const classSet = {};
@@ -978,6 +1017,7 @@
               mockStore.scores[key].values[studentNo][header.name] = val;
             }
           }
+          saveMockStore();
           successFn("Success");
         } else if (prop === "addHeader") {
           const [cls, uId, headerName] = args;
@@ -989,6 +1029,7 @@
             const colIndex = mockStore.scores[key].headers.length + 3;
             mockStore.scores[key].headers.push({ name: headerName, colIndex: colIndex, max: max });
           }
+          saveMockStore();
           successFn("Success");
         } else if (prop === "addStudent") {
           const [cls, no, name] = args;
@@ -997,6 +1038,7 @@
             name: String(name).trim(),
             className: cls
           });
+          saveMockStore();
           successFn("Success");
         } else if (prop === "addMultipleStudents") {
           const [cls, studentList] = args;
@@ -1009,11 +1051,42 @@
               });
             });
           }
+          saveMockStore();
           successFn("Success");
         } else if (prop === "createNewClass") {
-          const cls = args[0];
+          const cls = String(args[0]).trim();
+          const exists = mockStore.students.some(s => s.className === cls);
+          if (exists) {
+            successFn("Duplicate");
+            return;
+          }
           mockStore.students.push({ no: 1, name: "ด.ช. ตัวอย่าง รักเรียน", className: cls });
           mockStore.students.push({ no: 2, name: "ด.ญ. มานี มีตา", className: cls });
+
+          // กำหนด score template เริ่มต้นให้ชั้นเรียนใหม่
+          const uId = (currentUser && currentUser.userId) ? currentUser.userId : "ADM01";
+          const key = cls + "_" + uId;
+          mockStore.scores[key] = {
+            headers: [
+              { name: "คะแนนเก็บ (10)", colIndex: 3, max: 10 },
+              { name: "สอบกลางภาค (20)", colIndex: 4, max: 20 }
+            ],
+            values: {
+              1: { "คะแนนเก็บ (10)": "", "สอบกลางภาค (20)": "" },
+              2: { "คะแนนเก็บ (10)": "", "สอบกลางภาค (20)": "" }
+            }
+          };
+          saveMockStore();
+          successFn("Success");
+        } else if (prop === "deleteClass") {
+          const cls = String(args[0]).trim();
+          mockStore.students = mockStore.students.filter(s => s.className !== cls);
+          Object.keys(mockStore.scores).forEach(k => {
+            if (k === cls || k.startsWith(cls + "_")) {
+              delete mockStore.scores[k];
+            }
+          });
+          saveMockStore();
           successFn("Success");
         } else {
           failureFn(new Error("ฟังก์ชันไม่รองรับ"));
@@ -1254,6 +1327,11 @@
     if (adminBtn) {
       adminBtn.style.display = (currentUser.role === 'admin') ? 'flex' : 'none';
     }
+
+    const deleteBtn = document.getElementById('deleteClassBtn');
+    if (deleteBtn) {
+      deleteBtn.style.display = (currentUser.role === 'admin') ? 'flex' : 'none';
+    }
   }
 
   function promptGasSettings() {
@@ -1303,8 +1381,9 @@
           select.add(newOpt);
         }
 
-        if (selectClassName && classList.includes(selectClassName)) { 
-          select.value = selectClassName; 
+        let targetCls = selectClassName ? classList.find(c => String(c).trim() === String(selectClassName).trim()) : null;
+        if (targetCls) { 
+          select.value = targetCls; 
           fetchData(true); 
         } else if (classList.length > 0) {
           select.value = classList[0];
@@ -1318,9 +1397,44 @@
   }
 
   function formatClassName(shortName) {
-    if (shortName.startsWith("ป.")) return shortName.replace("ป.", "ชั้นประถมศึกษาปีที่ ");
-    if (shortName.startsWith("ม.")) return shortName.replace("ม.", "ชั้นมัธยมศึกษาปีที่ ");
-    return shortName;
+    if (!shortName) return "";
+    shortName = String(shortName).trim();
+    if (shortName.startsWith("ชั้น")) return shortName;
+    return "ชั้น " + shortName;
+  }
+
+  function confirmDeleteCurrentClass() {
+    let select = document.getElementById('classSelect');
+    let cls = select.value;
+    if (!cls || cls === "__NEW_CLASS__") {
+      return alert("กรุณาเลือกชั้นเรียนที่ต้องการลบก่อนครับ");
+    }
+
+    if (!currentUser || currentUser.role !== 'admin') {
+      return alert("สงวนสิทธิ์การลบชั้นเรียนเฉพาะผู้ดูแลระบบ (Admin) เท่านั้น");
+    }
+
+    if (classList.length <= 1) {
+      return alert("ต้องมีชั้นเรียนในระบบอย่างน้อย 1 ห้อง ไม่สามารถลบห้องสุดท้ายได้ครับ");
+    }
+
+    let displayName = formatClassName(cls);
+    if (!confirm(`คุณต้องการลบ "${displayName}" ใช่หรือไม่?\n\n⚠️ คำเตือน: ข้อมูลนักเรียนและคะแนนทั้งหมดของชั้นนี้จะถูกลบออกจากระบบอย่างถาวร`)) {
+      return;
+    }
+
+    showCutePopup("🗑️", "กำลังลบชั้นเรียน...", `ลบ ${displayName} ออกจากระบบน้า~`);
+
+    google.script.run
+      .withSuccessHandler(res => {
+        showCutePopup("✨", `ลบ ${displayName} สำเร็จ`, "อัปเดตรายชื่อชั้นเรียนเรียบร้อยแล้วจ้า", 800);
+        refreshClassList();
+      })
+      .withFailureHandler(err => {
+        hideCutePopup();
+        alert("เกิดข้อผิดพลาดในการลบชั้นเรียน: " + err);
+      })
+      .deleteClass(cls);
   }
 
   function onClassSelectChange() {

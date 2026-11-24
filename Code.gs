@@ -336,8 +336,10 @@ function getClassData(className, userId) {
     sheet.getRange(1, 1, 1, defaultHeader.length)
       .setFontWeight("bold")
       .setBackground("#e8eaed");
+    SpreadsheetApp.flush();
   }
 
+  SpreadsheetApp.flush();
   var data = sheet.getDataRange().getValues();
   if (data.length < 1) return { headers: [], students: [] };
 
@@ -425,10 +427,12 @@ function addHeader(className, userId, headerName) {
 function createNewClass(className) {
   var sheet = getOrCreateStudentsSheet();
   var data = sheet.getDataRange().getValues();
-  var exists = false;
+  var cls = String(className).trim();
+  if (!cls) return "InvalidClassName";
 
+  var exists = false;
   for (var i = 1; i < data.length; i++) {
-    if (String(data[i][2]).trim() === String(className).trim()) {
+    if (String(data[i][2]).trim() === cls) {
       exists = true;
       break;
     }
@@ -437,8 +441,45 @@ function createNewClass(className) {
   if (exists) return "Duplicate";
 
   // เพิ่มนักเรียนตัวอย่างสำหรับห้องเรียนใหม่ในชีต Students
-  sheet.appendRow([1, "ด.ช. ตัวอย่าง รักเรียน", String(className).trim()]);
-  sheet.appendRow([2, "ด.ญ. มานี มีตา", String(className).trim()]);
+  sheet.appendRow([1, "ด.ช. ตัวอย่าง รักเรียน", cls]);
+  sheet.appendRow([2, "ด.ญ. มานี มีตา", cls]);
+  SpreadsheetApp.flush();
+
+  return "Success";
+}
+
+// ลบชั้นเรียน (เฉพาะ Admin)
+function deleteClass(className) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var cls = String(className).trim();
+  if (!cls) return "InvalidClassName";
+
+  // 1. ลบนักเรียนของชั้นนี้ออกจากชีต Students
+  var studentSheet = ss.getSheetByName("Students");
+  if (studentSheet) {
+    var data = studentSheet.getDataRange().getValues();
+    // ลบจากแถวล่างสุดขึ้นบน เพื่อป้องกัน row index คลาดเคลื่อน
+    for (var r = data.length - 1; r >= 1; r--) {
+      if (String(data[r][2]).trim() === cls) {
+        studentSheet.deleteRow(r + 1);
+      }
+    }
+  }
+
+  // 2. ลบชีตคะแนนของห้องนี้ทั้งหมด (เช่น cls + "_ADM01", cls + "_TCH01")
+  var sheets = ss.getSheets();
+  sheets.forEach(function(sh) {
+    var shName = sh.getName();
+    if (shName === cls || shName.indexOf(cls + "_") === 0) {
+      if (ss.getSheets().length > 1) {
+        try {
+          ss.deleteSheet(sh);
+        } catch(e) {}
+      }
+    }
+  });
+
+  SpreadsheetApp.flush();
   return "Success";
 }
 
