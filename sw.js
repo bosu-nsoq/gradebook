@@ -1,7 +1,6 @@
-const CACHE_NAME = 'gradebook-cache-v1';
+const CACHE_NAME = 'gradebook-cache-v3';
 const ASSETS_TO_CACHE = [
   './',
-  './index.html',
   './manifest.json',
   'https://fonts.googleapis.com/css2?family=Mali:wght@400;500;600;700&display=swap',
   'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
@@ -34,10 +33,25 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  // Network-first สำหรับเอกสาร HTML เพื่อให้ได้โค้ดเวอร์ชันล่าสุดเสมอ
+  if (event.request.mode === 'navigate' || event.request.destination === 'document') {
+    event.respondWith(
+      fetch(event.request)
+        .then((networkResponse) => {
+          if (networkResponse && networkResponse.status === 200) {
+            const resClone = networkResponse.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, resClone));
+          }
+          return networkResponse;
+        })
+        .catch(() => caches.match(event.request))
+    );
+    return;
+  }
+
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {
       if (cachedResponse) {
-        // อัปเดตแคชในเบื้องหลัง (Stale-while-revalidate)
         fetch(event.request).then((networkResponse) => {
           if (networkResponse && networkResponse.status === 200) {
             caches.open(CACHE_NAME).then((cache) => cache.put(event.request, networkResponse));
@@ -48,4 +62,5 @@ self.addEventListener('fetch', (event) => {
       return fetch(event.request);
     })
   );
+});
 });
