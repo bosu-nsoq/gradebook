@@ -187,17 +187,47 @@ function getOrCreateUsersSheet() {
   var sheet = ss.getSheetByName("Users");
   if (!sheet) {
     sheet = ss.insertSheet("Users");
+  }
+  if (sheet.getLastRow() < 2) {
+    sheet.clear();
     sheet.appendRow(["UserID", "Name", "Subject", "PIN", "Role", "CreatedAt"]);
     sheet.appendRow(["ADM01", "ครูบอส", "ภาษาไทย", "8055", "admin", new Date()]);
     sheet.appendRow(["TCH01", "ครูสมหมาย มีสุข", "คณิตศาสตร์", "1234", "user", new Date()]);
-    
+    sheet.appendRow(["TCH02", "ครูสมศรี มณีฉาย", "วิทยาศาสตร์", "5678", "user", new Date()]);
+    sheet.appendRow(["TCH03", "ครูวีระ รักชาติ", "สังคมศึกษา", "9999", "user", new Date()]);
+  }
+  formatUsersSheet(sheet);
+  return sheet;
+}
+
+function formatUsersSheet(sheet) {
+  if (!sheet) return;
+  try {
     var headerRange = sheet.getRange(1, 1, 1, 6);
     headerRange.setFontWeight("bold")
       .setBackground("#6c5ce7")
       .setFontColor("#ffffff")
       .setHorizontalAlignment("center");
-  }
-  return sheet;
+
+    // กำหนดฟอร์แมตคอลัมน์ D (PIN) ให้เป็น Plain Text เพื่อไม่ให้ตัดเลขศูนย์นำหน้า
+    sheet.getRange("D2:D100").setNumberFormat("@");
+
+    // กำหนด Data Validation Dropdown ให้คอลัมน์ E (Role) เลือกเฉพาะ 'admin' หรือ 'user'
+    var roleRule = SpreadsheetApp.newDataValidation()
+      .requireValueInList(["admin", "user"], true)
+      .setAllowInvalid(false)
+      .setHelpText("กรุณาระบุ Role เป็น 'admin' หรือ 'user' เท่านั้น")
+      .build();
+    sheet.getRange("E2:E100").setDataValidation(roleRule);
+
+    sheet.setColumnWidth(1, 95);  // UserID
+    sheet.setColumnWidth(2, 180); // Name
+    sheet.setColumnWidth(3, 140); // Subject
+    sheet.setColumnWidth(4, 90);  // PIN
+    sheet.setColumnWidth(5, 105); // Role
+    sheet.setColumnWidth(6, 160); // CreatedAt
+    SpreadsheetApp.flush();
+  } catch(e) {}
 }
 
 function loginUserByPin(pin) {

@@ -818,7 +818,9 @@
   let mockStore = {
     users: [
       { row: 2, userId: "ADM01", name: "ครูบอส", subject: "ภาษาไทย", pin: "8055", role: "admin" },
-      { row: 3, userId: "TCH01", name: "ครูสมหมาย มีสุข", subject: "คณิตศาสตร์", pin: "1234", role: "user" }
+      { row: 3, userId: "TCH01", name: "ครูสมหมาย มีสุข", subject: "คณิตศาสตร์", pin: "1234", role: "user" },
+      { row: 4, userId: "TCH02", name: "ครูสมศรี มณีฉาย", subject: "วิทยาศาสตร์", pin: "5678", role: "user" },
+      { row: 5, userId: "TCH03", name: "ครูวีระ รักชาติ", subject: "สังคมศึกษา", pin: "9999", role: "user" }
     ],
     // ข้อมูลนักเรียนส่วนกลาง: เลขที่, ชื่อ, ชั้น
     students: [
@@ -883,16 +885,14 @@
   }
   loadMockStore();
 
-  const DEFAULT_GAS_URL = "";
+  const DEFAULT_GAS_URL = "https://script.google.com/macros/s/AKfycbyEQefL1pIv2md9_1VUrdrxdk1Tyf7RXMrbJlynDPRH73msk60anI1W8OJkY35NCmVz7A/exec";
 
   function getGasUrl() {
     const stored = localStorage.getItem(GAS_URL_KEY);
-    // ล้าง URL เดิมที่อาจเชื่อมต่อไม่ได้ออก เพื่อให้ระบบทำงานราบรื่น
-    if (stored && stored.includes("AKfycb")) {
+    if (stored && stored.includes("AKfycb") && stored !== DEFAULT_GAS_URL) {
       localStorage.removeItem(GAS_URL_KEY);
-      return "";
     }
-    return stored || DEFAULT_GAS_URL;
+    return localStorage.getItem(GAS_URL_KEY) || DEFAULT_GAS_URL;
   }
 
   /**
@@ -1173,9 +1173,12 @@
       if (!document.hidden && currentUser && document.getElementById('classSelect').value) fetchDataSilently();
     });
     if (autoSyncTimer) clearInterval(autoSyncTimer);
+    // ตรวจสอบและอัปเดตข้อมูลให้เป็นปัจจุบันทุก 5 วินาที เพื่อให้ใช้งานได้หลายเครื่องพร้อมกัน
     autoSyncTimer = setInterval(() => {
-      if (currentUser && document.getElementById('classSelect').value && !document.hidden) fetchDataSilently();
-    }, 45000);
+      if (currentUser && document.getElementById('classSelect').value && !document.hidden) {
+        fetchDataSilently();
+      }
+    }, 5000);
   }
 
   function showPinOverlay() {
@@ -1507,12 +1510,47 @@
     google.script.run
       .withSuccessHandler(data => {
         if (data && data.students) {
+          const prevCount = cachedData && cachedData.students ? cachedData.students.length : 0;
           cachedData = data;
           populateStudentDropdown();
-          calcTotal();
+          if (prevCount !== data.students.length) {
+            renderUI();
+          } else {
+            updateScoresSilently();
+          }
         }
       })
       .getClassData(cls, currentUser.userId);
+  }
+
+  // ซิงค์คะแนนให้เป็นปัจจุบันอัตโนมัติ โดยไม่กวนใจขณะครูกำลังพิมพ์
+  function updateScoresSilently() {
+    if (!cachedData || !cachedData.students || !cachedData.students[currentIndex]) return;
+    const student = cachedData.students[currentIndex];
+    
+    const noPill = document.getElementById('studentNoPill');
+    const nameText = document.getElementById('studentNameText');
+    const countHint = document.getElementById('studentCountHint');
+    if (noPill && student.no) noPill.innerText = `เลขที่ ${student.no}`;
+    if (nameText && student.name) nameText.innerText = student.name;
+    if (countHint) countHint.innerHTML = `<i class="fas fa-caret-down"></i> แตะเพื่อเลือกเลขที่ (${currentIndex + 1}/${cachedData.students.length})`;
+    
+    if (cachedData.headers) {
+      cachedData.headers.forEach((h, idx) => {
+        const input = document.getElementById('input-' + idx);
+        if (input && document.activeElement !== input) {
+          let score = student.scores[h.name];
+          if (score === undefined || score === null) score = "";
+          if (input.value !== String(score)) {
+            input.value = score;
+            let lowClass = (score !== "" && parseFloat(score) < (h.max / 2));
+            if (lowClass) input.classList.add('low-score');
+            else input.classList.remove('low-score');
+          }
+        }
+      });
+    }
+    calcTotal();
   }
 
   function populateStudentDropdown() {
@@ -1651,14 +1689,18 @@
     let cls = document.getElementById('classSelect').value;
     if (!cls || !cachedData || !cachedData.students || !cachedData.students[currentIndex] || !currentUser) return;
     
-    showCuteSaveToast("✨ บันทึกคะแนนแล้วจ้า~");
+    // อัปเดตในแคชเครื่องทันทีเพื่อให้การคำนวณและหน้าจอทำงานทันใจ
+    cachedData.students[currentIndex].scores[headerName] = el.value;
+    calcTotal();
+
+    showCuteSaveToast("✨ บันทึกคะแนนลงชีตแล้วจ้า~");
 
     google.script.run
       .withSuccessHandler(res => {
-        showCuteSaveToast("✅ บันทึกลง Google Sheets เรียบร้อย");
+        showCuteSaveToast("✅ บันทึกลง Google Sheets อัตโนมัติเรียบร้อย");
       })
       .withFailureHandler(err => {
-        showCuteSaveToast("⚠️ บันทึกไม่สำเร็จ ลองอีกครั้ง");
+        showCuteSaveToast("⚠️ ซิงค์ข้อมูลไม่สำเร็จ กำลังลองใหม่...");
       })
       .saveScore(cls, currentUser.userId, cachedData.students[currentIndex].row, colIndex, el.value);
   }
