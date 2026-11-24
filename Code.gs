@@ -756,8 +756,7 @@ function setupInitialSheets() {
       } catch(e) {}
     }
   });
-}
-  
+
   SpreadsheetApp.flush();
   return "Success";
 }
