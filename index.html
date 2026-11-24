@@ -1524,13 +1524,6 @@
       })
       .getClassData(cls, currentUser.userId);
   }
-      })
-      .withFailureHandler(err => {
-        hideCutePopup();
-        console.error("Fetch data error:", err);
-      })
-      .getClassData(cls, currentUser.userId);
-  }
 
   function fetchDataSilently() {
     let cls = document.getElementById('classSelect').value;
@@ -1864,14 +1857,6 @@
         })
         .withFailureHandler(err => {
           hideLoading();
-          alert("นำเข้ารายชื่อไม่สำเร็จ: " + err);
-        })
-        .addMultipleStudents(cls, studentList);
-    }
-  }
-        })
-        .withFailureHandler(err => {
-          hideCutePopup();
           alert("นำเข้ารายชื่อไม่สำเร็จ: " + err);
         })
         .addMultipleStudents(cls, studentList);
