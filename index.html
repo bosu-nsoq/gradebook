@@ -849,8 +849,10 @@
     }
   };
 
+  const DEFAULT_GAS_URL = "https://script.google.com/macros/s/AKfycbyILP3Z4oQRwj7aTEMngXAMOX89RGQMWHvvESjTgEp0DxCtPL3fZLv_g-jM1ZdX66qBXg/exec";
+
   function getGasUrl() {
-    return localStorage.getItem(GAS_URL_KEY) || "";
+    return localStorage.getItem(GAS_URL_KEY) || DEFAULT_GAS_URL;
   }
 
   /**
