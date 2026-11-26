@@ -1,10 +1,12 @@
-const CACHE_NAME = 'gradebook-cache-v14';
+const CACHE_NAME = 'gradebook-cache-v15';
 const ASSETS_TO_CACHE = [
   './',
   './manifest.json',
+  './gradebook.png',
+  './icon-192.png',
+  './icon-512.png',
   'https://fonts.googleapis.com/css2?family=Mali:wght@400;500;600;700&display=swap',
-  'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
-  'https://i.postimg.cc/bwLY28yb/gradebook.png'
+  'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css'
 ];
 
 self.addEventListener('install', (event) => {

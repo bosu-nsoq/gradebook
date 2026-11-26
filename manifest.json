@@ -10,8 +10,20 @@
   "orientation": "portrait",
   "icons": [
     {
-      "src": "https://i.postimg.cc/bwLY28yb/gradebook.png",
-      "sizes": "192x192 512x512",
+      "src": "./icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./gradebook.png",
+      "sizes": "800x800",
       "type": "image/png",
       "purpose": "any maskable"
     }
